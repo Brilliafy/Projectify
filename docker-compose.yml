@@ -1,0 +1,120 @@
+services:
+  postgres:
+    image: postgres:alpine
+    container_name: pms_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: userdb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d userdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  mongo:
+    image: mongo:latest
+    container_name: pms_mongo
+    restart: always
+    volumes:
+      - mongodata:/data/db
+
+  redis:
+    image: redis:alpine
+    container_name: pms_redis
+    restart: always
+    command: ["redis-server", "--save", "60", "1", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+
+  user-service:
+    build: 
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: pms_user_service
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://admin:password123@postgres:5432/userdb
+      - JWT_SECRET=dev_secret
+      - PORT=3001
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  team-service:
+    build:
+      context: ./team-service
+      dockerfile: Dockerfile
+    container_name: pms_team_service
+    restart: always
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/teamdb
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=dev_secret
+      - PORT=3002
+    depends_on:
+      - mongo
+      - redis
+
+  task-service:
+    build:
+      context: ./task-service
+      dockerfile: Dockerfile
+    container_name: pms_task_service
+    restart: always
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/taskdb
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=dev_secret
+      - PORT=3003
+    depends_on:
+      - mongo
+      - redis
+
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: pms_notification_service
+    restart: always
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/notificationdb
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=dev_secret
+      - PORT=3004
+    depends_on:
+      - mongo
+      - redis
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pms_frontend
+    restart: always
+
+  nginx:
+    image: nginx:alpine
+    container_name: pms_gateway
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      - frontend
+      - user-service
+      - team-service
+      - task-service
+      - notification-service
+
+volumes:
+  pgdata:
+  mongodata:
+  redisdata:
