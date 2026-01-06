@@ -1,0 +1,30 @@
+{
+  "name": "notification-service",
+  "version": "1.0.0",
+  "description": "Real-time notification service for Projectify",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsx watch src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@fastify/cors": "^9.0.1",
+    "@fastify/jwt": "^8.0.1",
+    "dotenv": "^16.4.5",
+    "fastify": "^4.28.1",
+    "fastify-socket.io": "^5.1.0",
+    "ioredis": "^5.4.1",
+    "mongoose": "^8.7.0",
+    "socket.io": "^4.8.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2"
+  }
+}
