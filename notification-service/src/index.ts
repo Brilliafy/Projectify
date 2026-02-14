@@ -65,7 +65,7 @@ sub.on('message', async (channel, message) => {
     try {
       const data = JSON.parse(message);
       // data: { userIds: number[], type: string, message: string, relatedId: string, metadata?: any }
-      
+
       console.log('Received Redis message:', data);
 
       const notificationsToCreate = data.userIds.map((uid: number) => ({
@@ -77,12 +77,12 @@ sub.on('message', async (channel, message) => {
         read: false
       }));
 
-      
+
       const createdNotifications = await Notification.insertMany(notificationsToCreate);
 
-      
+
       createdNotifications.forEach((notif) => {
-         (server as any).io.to(`user:${notif.userId}`).emit('notification', notif);
+        (server as any).io.to(`user:${notif.userId}`).emit('notification', notif);
       });
 
     } catch (e) {
@@ -96,7 +96,7 @@ sub.on('message', async (channel, message) => {
 server.ready().then(() => {
   (server as any).io.on('connection', async (socket: Socket) => {
     console.log('New socket connection:', socket.id);
-    
+
     // Authenticate
     const token = socket.handshake.auth.token;
     if (!token) {
@@ -109,9 +109,9 @@ server.ready().then(() => {
       // Manually verify token since socket.io doesn't use fastify-jwt decorator automatically on handshake
       const decoded: any = server.jwt.verify(token);
       const userId = decoded.id;
-      
+
       console.log(`User ${userId} authenticated on socket ${socket.id}`);
-      
+
       // Join a room specific to this user
       socket.join(`user:${userId}`);
 
@@ -137,11 +137,11 @@ async function requireAuth(req: any) {
 // GET /api/notifications - Fetch user's notifications
 server.get('/api/notifications', async (req, reply) => {
   const user = await requireAuth(req);
-  
+
   const notifications = await Notification.find({ userId: user.id })
     .sort({ createdAt: -1 })
     .limit(50); // Limit to last 50 for now
-    
+
   return notifications;
 });
 
@@ -178,9 +178,9 @@ server.patch('/api/notifications/read-all', async (req, reply) => {
 
 // DELETE /api/notifications - Clear all (Optional, maybe for cleanup)
 server.delete('/api/notifications', async (req, reply) => {
-    const user = await requireAuth(req);
-    await Notification.deleteMany({ userId: user.id });
-    return { message: 'Notifications cleared' };
+  const user = await requireAuth(req);
+  await Notification.deleteMany({ userId: user.id });
+  return { message: 'Notifications cleared' };
 });
 
 
