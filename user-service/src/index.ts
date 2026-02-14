@@ -1,8 +1,8 @@
 import 'dotenv/config';
-import Fastify from 'fastify';
+import Fastify, { FastifyRequest, FastifyReply } from 'fastify';
 import jwt from '@fastify/jwt';
 import cors from '@fastify/cors';
-import { PrismaClient } from '@db/client';
+import { PrismaClient, Role } from '@db/client';
 import bcrypt from 'bcryptjs';
 import { PrismaPg } from '@prisma/adapter-pg';
 
@@ -24,7 +24,11 @@ server.register(jwt, { secret: process.env.JWT_SECRET || 'dev_secret' });
 
 
 
-async function requireAdmin(request: any, reply: any) {
+interface IdParams {
+  id: string;
+}
+
+async function requireAdmin(request: FastifyRequest, reply: FastifyReply) {
   await request.jwtVerify();
   if (request.user.role !== 'ADMIN') {
     return reply.status(403).send({ error: 'Admin access required' });
@@ -33,8 +37,14 @@ async function requireAdmin(request: any, reply: any) {
 
 
 
-server.post('/api/users/register', async (request, reply) => {
-  const { email, password, fullName } = request.body as any;
+interface RegisterBody {
+  email: string;
+  password: string;
+  fullName: string;
+}
+
+server.post<{ Body: RegisterBody }>('/api/users/register', async (request: FastifyRequest<{ Body: RegisterBody }>, reply: FastifyReply) => {
+  const { email, password, fullName } = request.body;
   const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
@@ -57,8 +67,13 @@ server.post('/api/users/register', async (request, reply) => {
   }
 });
 
-server.post('/api/users/login', async (request, reply) => {
-  const { email, password } = request.body as any;
+interface LoginBody {
+  email: string;
+  password: string;
+}
+
+server.post<{ Body: LoginBody }>('/api/users/login', async (request: FastifyRequest<{ Body: LoginBody }>, reply: FastifyReply) => {
+  const { email, password } = request.body;
 
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -84,7 +99,7 @@ server.post('/api/users/login', async (request, reply) => {
 
 
 
-server.get('/api/users/admin', async (request, reply) => {
+server.get('/api/users/admin', async (request: FastifyRequest, reply: FastifyReply) => {
   await requireAdmin(request, reply);
 
   return prisma.user.findMany({
@@ -99,21 +114,25 @@ server.get('/api/users/admin', async (request, reply) => {
   });
 });
 
-server.patch('/api/users/admin/:id/activate', async (request, reply) => {
+server.patch<{ Params: IdParams }>('/api/users/admin/:id/activate', async (request: FastifyRequest<{ Params: IdParams }>, reply: FastifyReply) => {
   await requireAdmin(request, reply);
 
-  const { id } = request.params as any;
+  const { id } = request.params;
   return prisma.user.update({
     where: { id: Number(id) },
     data: { isActive: true },
   });
 });
 
-server.patch('/api/users/admin/:id/role', async (request, reply) => {
+interface RoleBody {
+  role: Role;
+}
+
+server.patch<{ Params: IdParams; Body: RoleBody }>('/api/users/admin/:id/role', async (request: FastifyRequest<{ Params: IdParams; Body: RoleBody }>, reply: FastifyReply) => {
   await requireAdmin(request, reply);
 
-  const { id } = request.params as any;
-  const { role } = request.body as any;
+  const { id } = request.params;
+  const { role } = request.body;
 
   return prisma.user.update({
     where: { id: Number(id) },
@@ -121,10 +140,10 @@ server.patch('/api/users/admin/:id/role', async (request, reply) => {
   });
 });
 
-server.delete('/api/users/admin/:id', async (request, reply) => {
+server.delete<{ Params: IdParams }>('/api/users/admin/:id', async (request: FastifyRequest<{ Params: IdParams }>, reply: FastifyReply) => {
   await requireAdmin(request, reply);
 
-  const { id } = request.params as any;
+  const { id } = request.params;
   const adminId = request.user.id;
 
   if (Number(id) === adminId) {
@@ -145,10 +164,10 @@ server.delete('/api/users/admin/:id', async (request, reply) => {
 });
 
 
-server.get('/api/users', async (request, reply) => {
+server.get('/api/users', async (request: FastifyRequest, reply: FastifyReply) => {
   // Require authentication
   await request.jwtVerify();
-  const user = request.user as { id: number; role: string };
+  const user = request.user;
 
   // Return only active users
   const users = await prisma.user.findMany({
