@@ -2,9 +2,8 @@ import 'dotenv/config';
 import Fastify from 'fastify';
 import jwt from '@fastify/jwt';
 import cors from '@fastify/cors';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@db/client';
 import bcrypt from 'bcryptjs';
-import { z } from 'zod';
 import { PrismaPg } from '@prisma/adapter-pg';
 
 const server = Fastify();
