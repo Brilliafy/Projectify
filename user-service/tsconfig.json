@@ -8,9 +8,6 @@
     "strict": true,
     "skipLibCheck": true,
     "outDir": "./dist",
-    "types": [
-      "node"
-    ],
     "baseUrl": ".",
     "paths": {
       "@db/*": [
@@ -19,6 +16,7 @@
     }
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "src/types/*.d.ts"
   ]
 }
