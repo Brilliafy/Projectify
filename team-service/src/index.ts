@@ -2,7 +2,6 @@ import 'dotenv/config';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
-import util from 'util';
 import Redis from 'ioredis';
 import mongoose, { Schema } from 'mongoose';
 
@@ -90,7 +89,7 @@ server.post('/api/teams', async (req, reply) => {
   const { name, description } = req.body as any;
   if (!name) return reply.status(400).send({ error: 'Team name is required' });
 
-  
+
   const duplicate = await Team.findOne({ name });
   if (duplicate) {
     return reply.status(400).send({ error: 'This team already exists' });
@@ -145,7 +144,7 @@ server.post('/api/teams/:id/members', async (req, reply) => {
 
   await Team.findByIdAndUpdate(id, { $addToSet: { members: userIdToAdd } });
 
-  
+
   redis.publish('notifications', JSON.stringify({
     userIds: [userIdToAdd],
     type: 'TEAM_ADDED',
@@ -192,13 +191,13 @@ server.patch('/api/teams/:id', async (req, reply) => {
     return reply.status(404).send({ error: 'Team not found' });
   }
 
-  
+
   if (!requireLeader(user, team, reply)) return;
 
   const update: any = {};
   if (typeof name === 'string' && name.trim()) {
     const newName = name.trim();
-    
+
     const duplicate = await Team.findOne({ name: newName, _id: { $ne: id } });
     if (duplicate) {
       return reply.status(400).send({ error: 'Team name must be unique' });
@@ -224,7 +223,7 @@ server.delete('/api/teams/:id', async (req, reply) => {
     return reply.status(404).send({ error: 'Team not found' });
   }
 
-  
+
   if (!requireLeader(user, team, reply)) return;
 
   await Team.findByIdAndDelete(id);
