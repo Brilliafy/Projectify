@@ -61,6 +61,7 @@ export default function TaskDetail() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tasks'] });
       qc.invalidateQueries({ queryKey: ['task', taskId] });
+      qc.invalidateQueries({ queryKey: ['comments', taskId] });
       toast.success('Status updated');
     },
     onError: () => toast.error('Failed to update status'),

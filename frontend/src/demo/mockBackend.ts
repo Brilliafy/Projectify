@@ -36,7 +36,7 @@ function setStorage<T>(key: string, val: T): void {
   }
 }
 
-const DEMO_SCHEMA_VERSION = 'v5_overdue_task_samples';
+const DEMO_SCHEMA_VERSION = 'v6_preserve_completed_timeline_events';
 
 export function initDemoStorage(): void {
   const currentVersion = localStorage.getItem('projectify_demo_version');
@@ -385,7 +385,28 @@ export async function handleMockRequest(config: InternalAxiosRequestConfig): Pro
         createdAt: new Date().toISOString(),
       };
 
-      const newCommentsList: Comment[] = [...(commentsMap[taskId] || []), newComment];
+      const existingComments = commentsMap[taskId] || [];
+      const lastTimelineEvent = [...existingComments].reverse().find(
+        (c) => c.eventType === 'COMPLETED' || c.eventType === 'REOPENED'
+      );
+
+      const baseComments = [...existingComments];
+      // If task was completed (DONE) and timeline didn't have a COMPLETED event,
+      // preserve the completed event before adding the new comment and reopened event!
+      if (isReopening && (!lastTimelineEvent || lastTimelineEvent.eventType !== 'COMPLETED')) {
+        baseComments.push({
+          _id: `comm-event-completed-${Date.now() - 2000}`,
+          taskId,
+          text: 'marked this task as completed',
+          creatorId: targetTask?.creatorId ?? 1,
+          creatorName: targetTask?.creatorId === 2 ? 'Marcus Vance (Platform Lead)' : 'Elena Rostova (System Admin)',
+          creatorRole: targetTask?.creatorId === 2 ? 'TEAM_LEADER' : 'ADMIN',
+          eventType: 'COMPLETED',
+          createdAt: targetTask?.updatedAt || new Date(Date.now() - 3600000).toISOString(),
+        });
+      }
+
+      const newCommentsList: Comment[] = [...baseComments, newComment];
 
       // GITHUB-STYLE REOPEN: If task was completed (DONE), commenting reopens it!
       if (isReopening && targetTask) {
@@ -397,7 +418,7 @@ export async function handleMockRequest(config: InternalAxiosRequestConfig): Pro
         const reopenEvent: Comment = {
           _id: `comm-event-${Date.now() + 1}`,
           taskId,
-          text: 'reopened this task',
+          text: 'reopened this task with a new comment',
           creatorId: currentUser?.id ?? 1,
           creatorName: currentUser?.fullName ?? 'Demo User',
           creatorRole: currentUser?.role ?? 'MEMBER',
@@ -472,7 +493,24 @@ export async function handleMockRequest(config: InternalAxiosRequestConfig): Pro
           [taskId]: [...curComments, completedEvent],
         });
       } else if (previous && previous.status === 'DONE' && status !== 'DONE') {
-        const reopenEvent: Comment = {
+        const curComments = commentsMap[taskId] || [];
+        const lastTimelineEvent = [...curComments].reverse().find(
+          (c) => c.eventType === 'COMPLETED' || c.eventType === 'REOPENED'
+        );
+        const toAdd: Comment[] = [];
+        if (!lastTimelineEvent || lastTimelineEvent.eventType !== 'COMPLETED') {
+          toAdd.push({
+            _id: `comm-event-completed-${Date.now() - 1000}`,
+            taskId,
+            text: 'marked this task as completed',
+            creatorId: previous.creatorId ?? 1,
+            creatorName: previous.creatorId === 2 ? 'Marcus Vance (Platform Lead)' : 'Elena Rostova (System Admin)',
+            creatorRole: previous.creatorId === 2 ? 'TEAM_LEADER' : 'ADMIN',
+            eventType: 'COMPLETED',
+            createdAt: previous.updatedAt || new Date(Date.now() - 3600000).toISOString(),
+          });
+        }
+        toAdd.push({
           _id: `comm-event-${Date.now()}`,
           taskId,
           text: 'reopened this task',
@@ -481,11 +519,10 @@ export async function handleMockRequest(config: InternalAxiosRequestConfig): Pro
           creatorRole: currentUser?.role ?? 'MEMBER',
           eventType: 'REOPENED',
           createdAt: new Date().toISOString(),
-        };
-        const curComments = commentsMap[taskId] || [];
+        });
         setStorage(STORAGE_KEYS.COMMENTS, {
           ...commentsMap,
-          [taskId]: [...curComments, reopenEvent],
+          [taskId]: [...curComments, ...toAdd],
         });
       }
 

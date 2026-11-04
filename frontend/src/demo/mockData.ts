@@ -316,6 +316,16 @@ export const INITIAL_COMMENTS: Record<string, Comment[]> = {
       creatorRole: 'TEAM_LEADER',
       createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
     },
+    {
+      _id: 'comm-103-completed',
+      taskId: 'task-103',
+      text: 'marked this task as completed',
+      creatorId: 1,
+      creatorName: 'Elena Rostova (System Admin)',
+      creatorRole: 'ADMIN',
+      eventType: 'COMPLETED',
+      createdAt: new Date(Date.now() - 2 * 86400000 + 3600000).toISOString(),
+    },
   ],
   'task-104': [
     {
@@ -347,6 +357,16 @@ export const INITIAL_COMMENTS: Record<string, Comment[]> = {
       creatorName: 'Elena Rostova (System Admin)',
       creatorRole: 'ADMIN',
       createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
+    },
+    {
+      _id: 'comm-104-completed',
+      taskId: 'task-104',
+      text: 'marked this task as completed',
+      creatorId: 1,
+      creatorName: 'Elena Rostova (System Admin)',
+      creatorRole: 'ADMIN',
+      eventType: 'COMPLETED',
+      createdAt: new Date(Date.now() - 5 * 86400000 + 3600000).toISOString(),
     },
   ],
   'task-105': [

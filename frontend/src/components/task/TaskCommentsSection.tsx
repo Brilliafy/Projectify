@@ -104,13 +104,15 @@ export const TaskCommentsSection: React.FC<TaskCommentsSectionProps> = ({
                       {comment.creatorName}
                     </span>
                     <span className="text-slate-500 dark:text-slate-400">
-                      reopened this task with a new comment
+                      {comment.text || 'reopened this task with a new comment'}
                     </span>
                     <span className="badge badge-sm bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-none font-bold text-[10px] tracking-wider px-2">
                       Uncompleted
                     </span>
                     <span className="text-slate-400 text-[11px] ml-auto">
-                      {new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(comment.createdAt).toDateString() === new Date().toDateString()
+                        ? new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        : new Date(comment.createdAt).toLocaleDateString()}
                     </span>
                   </div>
                 </div>
@@ -130,13 +132,15 @@ export const TaskCommentsSection: React.FC<TaskCommentsSectionProps> = ({
                       {comment.creatorName}
                     </span>
                     <span className="text-slate-500 dark:text-slate-400">
-                      marked this task as completed
+                      {comment.text || 'marked this task as completed'}
                     </span>
                     <span className="badge badge-sm bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-none font-bold text-[10px] tracking-wider px-2">
                       Completed
                     </span>
                     <span className="text-slate-400 text-[11px] ml-auto">
-                      {new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(comment.createdAt).toDateString() === new Date().toDateString()
+                        ? new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        : new Date(comment.createdAt).toLocaleDateString()}
                     </span>
                   </div>
                 </div>
