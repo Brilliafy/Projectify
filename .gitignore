@@ -47,4 +47,7 @@ coverage/
 
 # Project specific
 testData/
-scripts/
+scripts/
+# Local Netlify folder
+.netlify
+
