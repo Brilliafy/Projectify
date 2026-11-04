@@ -308,13 +308,14 @@ iframe[title="Netlify"] {
   animation: aurora-3 24s ease-in-out infinite alternate;
 }
 
-/* God-tier Spinning Conic Gradient Border Beam */
+/* God-tier Spinning Conic Gradient Border Beam (Light Mode) */
 .border-beam-card {
   position: relative;
   overflow: hidden;
   border-radius: 1.75rem;
-  padding: 1.5px;
-  background: rgba(255, 255, 255, 0.08);
+  padding: 2px;
+  background: rgba(99, 102, 241, 0.12);
+  box-shadow: 0 25px 60px -15px rgba(99, 102, 241, 0.22), 0 0 35px rgba(99, 102, 241, 0.12);
 }
 
 .border-beam-card::before {
@@ -328,28 +329,28 @@ iframe[title="Netlify"] {
     from 0deg,
     transparent 0deg,
     transparent 45deg,
-    #6366f1 90deg,
-    #a855f7 140deg,
-    #38bdf8 190deg,
-    #ec4899 240deg,
+    #4f46e5 90deg,
+    #7c3aed 140deg,
+    #06b6d4 190deg,
+    #f43f5e 240deg,
     transparent 280deg,
     transparent 360deg
   );
-  animation: border-spin 4.5s linear infinite;
+  animation: border-spin 4s linear infinite;
   z-index: 0;
 }
 
 .border-beam-inner {
   position: relative;
-  border-radius: calc(1.75rem - 1.5px);
-  background: rgba(15, 23, 42, 0.92);
+  border-radius: calc(1.75rem - 2px);
+  background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(28px);
   -webkit-backdrop-filter: blur(28px);
   z-index: 1;
 }
 
-.dot-pattern-bg {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+.dot-pattern-light {
+  background-image: radial-gradient(rgba(99, 102, 241, 0.12) 1.2px, transparent 1.2px);
   background-size: 24px 24px;
 }
 

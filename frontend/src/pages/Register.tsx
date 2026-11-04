@@ -33,24 +33,27 @@ export default function Register() {
     setFocused((p) => ({ ...p, [name]: value !== '' }));
 
   return (
-    <div className="w-screen min-h-screen flex items-center justify-center bg-[#070b14] relative overflow-hidden p-4 font-['Inter']">
-      {/* Dynamic Animated Mesh Gradient Orbs */}
-      <div className="absolute inset-0 dot-pattern-bg pointer-events-none opacity-40"></div>
+    <div className="w-screen min-h-screen flex items-center justify-center bg-[#f8fafc] relative overflow-hidden p-4 font-['Inter']">
+      {/* Light Live Animated Mesh Gradient Orbs */}
+      <div className="absolute inset-0 dot-pattern-light pointer-events-none opacity-60"></div>
       
-      {/* Orb 1: Indigo / Violet Glow */}
-      <div className="absolute -top-32 -right-32 w-[520px] h-[520px] rounded-full bg-gradient-to-tr from-indigo-600/35 to-violet-600/30 blur-[130px] animate-aurora-1 pointer-events-none"></div>
+      {/* Orb 1: Soft Indigo / Violet Glow */}
+      <div className="absolute -top-28 -right-28 w-[540px] h-[540px] rounded-full bg-gradient-to-tr from-indigo-300/40 to-purple-300/35 blur-[110px] animate-aurora-1 pointer-events-none"></div>
 
-      {/* Orb 2: Cyan / Blue Sheen */}
-      <div className="absolute -bottom-36 -left-36 w-[560px] h-[560px] rounded-full bg-gradient-to-br from-cyan-500/25 to-blue-700/30 blur-[140px] animate-aurora-2 pointer-events-none"></div>
+      {/* Orb 2: Sky / Cyan Vibrant Sheen */}
+      <div className="absolute -bottom-32 -left-32 w-[580px] h-[580px] rounded-full bg-gradient-to-br from-sky-300/40 to-cyan-200/45 blur-[120px] animate-aurora-2 pointer-events-none"></div>
 
-      {/* Card with God-Tier Animated Border Beam */}
-      <div className="w-full max-w-md border-beam-card shadow-[0_20px_70px_rgba(0,0,0,0.65)] z-10 transition-transform">
-        <div className="border-beam-inner p-8 sm:p-10 border border-white/10 text-white">
+      {/* Orb 3: Peach / Rose Warm Ambient Glow */}
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] rounded-full bg-gradient-to-r from-rose-200/35 via-pink-200/30 to-amber-200/35 blur-[100px] animate-aurora-3 pointer-events-none"></div>
+
+      {/* Card with Cool Animated Border Beam (Light Mode) */}
+      <div className="w-full max-w-md border-beam-card shadow-2xl z-10 transition-transform">
+        <div className="border-beam-inner p-8 sm:p-10 border border-white/80 text-slate-800">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-black font-['Outfit'] tracking-tight bg-gradient-to-r from-white via-indigo-100 to-indigo-400 bg-clip-text text-transparent">
-              Create Account
+            <h1 className="text-4xl font-black font-['Outfit'] tracking-tight text-slate-900">
+              Create Account<span className="text-primary">.</span>
             </h1>
-            <p className="mt-2 text-xs text-white/50 tracking-wide font-medium">
+            <p className="mt-2 text-xs text-slate-500 tracking-wide font-medium">
               Demo sandbox: admin approval simulated
             </p>
           </div>
@@ -63,11 +66,11 @@ export default function Register() {
                 placeholder=" "
                 onFocus={() => handleFocus('fullName')}
                 onBlur={(e) => handleBlur('fullName', e.target.value)}
-                className="peer w-full bg-white/[0.05] border-b-2 border-white/20 focus:border-primary outline-none py-3 px-3 rounded-t-xl transition-all text-white placeholder-transparent text-sm focus:bg-white/[0.08]"
+                className="peer w-full bg-slate-50/90 border-b-2 border-slate-300 focus:border-primary outline-none py-3 px-3 rounded-t-xl transition-all text-slate-900 placeholder-transparent text-sm focus:bg-white"
               />
               <label
                 className={`absolute left-3 top-3 text-sm transition-all pointer-events-none
-                  ${focused.fullName ? '-translate-y-6 text-xs text-primary font-bold' : 'text-white/40'}
+                  ${focused.fullName ? '-translate-y-6 text-xs text-primary font-bold' : 'text-slate-400'}
                 `}
               >
                 Full Name
@@ -81,11 +84,11 @@ export default function Register() {
                 placeholder=" "
                 onFocus={() => handleFocus('email')}
                 onBlur={(e) => handleBlur('email', e.target.value)}
-                className="peer w-full bg-white/[0.05] border-b-2 border-white/20 focus:border-primary outline-none py-3 px-3 rounded-t-xl transition-all text-white placeholder-transparent text-sm focus:bg-white/[0.08]"
+                className="peer w-full bg-slate-50/90 border-b-2 border-slate-300 focus:border-primary outline-none py-3 px-3 rounded-t-xl transition-all text-slate-900 placeholder-transparent text-sm focus:bg-white"
               />
               <label
                 className={`absolute left-3 top-3 text-sm transition-all pointer-events-none
-                  ${focused.email ? '-translate-y-6 text-xs text-primary font-bold' : 'text-white/40'}
+                  ${focused.email ? '-translate-y-6 text-xs text-primary font-bold' : 'text-slate-400'}
                 `}
               >
                 Email
@@ -99,11 +102,11 @@ export default function Register() {
                 placeholder=" "
                 onFocus={() => handleFocus('password')}
                 onBlur={(e) => handleBlur('password', e.target.value)}
-                className="peer w-full bg-white/[0.05] border-b-2 border-white/20 focus:border-primary outline-none py-3 px-3 rounded-t-xl transition-all text-white placeholder-transparent text-sm focus:bg-white/[0.08]"
+                className="peer w-full bg-slate-50/90 border-b-2 border-slate-300 focus:border-primary outline-none py-3 px-3 rounded-t-xl transition-all text-slate-900 placeholder-transparent text-sm focus:bg-white"
               />
               <label
                 className={`absolute left-3 top-3 text-sm transition-all pointer-events-none
-                  ${focused.password ? '-translate-y-6 text-xs text-primary font-bold' : 'text-white/40'}
+                  ${focused.password ? '-translate-y-6 text-xs text-primary font-bold' : 'text-slate-400'}
                 `}
               >
                 Password (min 6 chars)
@@ -112,13 +115,13 @@ export default function Register() {
 
             <button
               type="submit"
-              className="w-full py-3.5 btn btn-primary text-white font-black tracking-wide rounded-xl shadow-[0_0_25px_rgba(99,102,241,0.5)] hover:shadow-[0_0_35px_rgba(99,102,241,0.7)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 border-none"
+              className="w-full py-3.5 btn btn-primary text-white font-black tracking-wide rounded-xl shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 border-none"
             >
               Register
             </button>
           </form>
 
-          <p className="mt-6 text-center text-white/50 text-xs">
+          <p className="mt-6 text-center text-slate-500 text-xs">
             Already have an account?{' '}
             <Link to="/login" className="text-primary font-bold hover:underline transition-colors">
               Sign In

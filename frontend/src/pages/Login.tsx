@@ -53,73 +53,73 @@ export default function Login() {
     setFocused((p) => ({ ...p, [name]: value !== '' }));
 
   return (
-    <div className="w-screen min-h-screen flex items-center justify-center bg-[#070b14] relative overflow-hidden p-4 font-['Inter']">
-      {/* Dynamic Animated Mesh Gradient Orbs */}
-      <div className="absolute inset-0 dot-pattern-bg pointer-events-none opacity-40"></div>
+    <div className="w-screen min-h-screen flex items-center justify-center bg-[#f8fafc] relative overflow-hidden p-4 font-['Inter']">
+      {/* Light Live Animated Mesh Gradient Orbs */}
+      <div className="absolute inset-0 dot-pattern-light pointer-events-none opacity-60"></div>
       
-      {/* Orb 1: Indigo / Violet Glow */}
-      <div className="absolute -top-32 -left-32 w-[520px] h-[520px] rounded-full bg-gradient-to-tr from-indigo-600/35 to-violet-600/30 blur-[130px] animate-aurora-1 pointer-events-none"></div>
+      {/* Orb 1: Soft Indigo / Violet Glow */}
+      <div className="absolute -top-28 -left-28 w-[540px] h-[540px] rounded-full bg-gradient-to-tr from-indigo-300/40 to-purple-300/35 blur-[110px] animate-aurora-1 pointer-events-none"></div>
 
-      {/* Orb 2: Cyan / Blue Sheen */}
-      <div className="absolute -bottom-36 -right-36 w-[560px] h-[560px] rounded-full bg-gradient-to-br from-cyan-500/25 to-blue-700/30 blur-[140px] animate-aurora-2 pointer-events-none"></div>
+      {/* Orb 2: Sky / Cyan Vibrant Sheen */}
+      <div className="absolute -bottom-32 -right-32 w-[580px] h-[580px] rounded-full bg-gradient-to-br from-sky-300/40 to-cyan-200/45 blur-[120px] animate-aurora-2 pointer-events-none"></div>
 
-      {/* Orb 3: Pink / Purple Ambient Center */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[380px] rounded-full bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-primary/25 blur-[120px] animate-aurora-3 pointer-events-none"></div>
+      {/* Orb 3: Peach / Rose Warm Ambient Glow */}
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] rounded-full bg-gradient-to-r from-rose-200/35 via-pink-200/30 to-amber-200/35 blur-[100px] animate-aurora-3 pointer-events-none"></div>
 
-      {/* Card with God-Tier Animated Border Beam */}
-      <div className="w-full max-w-md border-beam-card shadow-[0_20px_70px_rgba(0,0,0,0.65)] z-10 transition-transform">
-        <div className="border-beam-inner p-8 sm:p-10 border border-white/10 text-white">
+      {/* Card with Cool Animated Border Beam (Light Mode) */}
+      <div className="w-full max-w-md border-beam-card shadow-2xl z-10 transition-transform">
+        <div className="border-beam-inner p-8 sm:p-10 border border-white/80 text-slate-800">
           <div className="text-center mb-6">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-white/15 to-white/5 shadow-[0_0_25px_rgba(99,102,241,0.4)] overflow-hidden flex items-center justify-center p-2.5 border border-white/20 mx-auto mb-3 backdrop-blur-md">
-              <img src={ProjectifyIcon} alt="Logo" className="w-full h-full object-contain drop-shadow" />
+            <div className="w-14 h-14 rounded-2xl bg-white shadow-md overflow-hidden flex items-center justify-center p-2.5 border border-slate-100 mx-auto mb-3">
+              <img src={ProjectifyIcon} alt="Logo" className="w-full h-full object-contain" />
             </div>
-            <h1 className="text-4xl font-black font-['Outfit'] tracking-tight bg-gradient-to-r from-white via-indigo-100 to-indigo-400 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-black font-['Outfit'] tracking-tight text-slate-900">
               Projectify<span className="text-primary">.</span>
             </h1>
-            <p className="mt-1 text-xs text-white/50 tracking-wide font-medium">Interactive Showcase Demo</p>
+            <p className="mt-1 text-xs text-slate-500 tracking-wide font-medium">Interactive Showcase Demo</p>
           </div>
 
           {/* 1-Click Demo Login Personas */}
-          <div className="mb-6 p-4 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-sm">
+          <div className="mb-6 p-4 rounded-2xl bg-slate-50 border border-slate-200/70 shadow-sm">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[11px] font-black uppercase tracking-wider text-primary flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 1-Click Demo Personas
               </span>
-              <span className="badge badge-xs badge-primary font-bold px-2 py-1">Instant Access</span>
+              <span className="badge badge-xs bg-indigo-100 text-primary border-none font-bold px-2 py-1">Instant Access</span>
             </div>
-            <p className="text-[11px] text-white/50 mb-3">
-              Explore role-based permissions and live sample data:
+            <p className="text-[11px] text-slate-500 mb-3">
+              Choose a persona to explore role-based permissions:
             </p>
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => quickLogin('admin@projectify.com')}
-                className="group relative p-2.5 rounded-xl bg-gradient-to-b from-white/10 to-white/[0.02] border border-white/15 hover:border-primary/60 hover:shadow-[0_0_20px_rgba(99,102,241,0.35)] transition-all duration-300 flex flex-col items-center hover:scale-105 active:scale-95"
+                className="group p-2.5 rounded-xl bg-white hover:bg-amber-50/70 border border-slate-200/80 hover:border-amber-300 text-slate-800 shadow-xs transition-all duration-200 flex flex-col items-center hover:scale-105 active:scale-95"
               >
-                <span className="text-xs font-black text-white group-hover:text-primary transition-colors">👑 Admin</span>
-                <span className="text-[9px] font-medium text-white/40 group-hover:text-white/70">Full Control</span>
+                <span className="text-xs font-black text-slate-900 group-hover:text-amber-700 transition-colors">👑 Admin</span>
+                <span className="text-[10px] font-semibold text-slate-500 group-hover:text-amber-800">Full Control</span>
               </button>
               <button
                 type="button"
                 onClick={() => quickLogin('leader@projectify.com')}
-                className="group relative p-2.5 rounded-xl bg-gradient-to-b from-white/10 to-white/[0.02] border border-white/15 hover:border-primary/60 hover:shadow-[0_0_20px_rgba(99,102,241,0.35)] transition-all duration-300 flex flex-col items-center hover:scale-105 active:scale-95"
+                className="group p-2.5 rounded-xl bg-white hover:bg-indigo-50/70 border border-slate-200/80 hover:border-indigo-300 text-slate-800 shadow-xs transition-all duration-200 flex flex-col items-center hover:scale-105 active:scale-95"
               >
-                <span className="text-xs font-black text-white group-hover:text-primary transition-colors">🚀 Leader</span>
-                <span className="text-[9px] font-medium text-white/40 group-hover:text-white/70">Team Lead</span>
+                <span className="text-xs font-black text-slate-900 group-hover:text-primary transition-colors">🚀 Leader</span>
+                <span className="text-[10px] font-semibold text-slate-500 group-hover:text-indigo-800">Team Lead</span>
               </button>
               <button
                 type="button"
                 onClick={() => quickLogin('sarah@projectify.com')}
-                className="group relative p-2.5 rounded-xl bg-gradient-to-b from-white/10 to-white/[0.02] border border-white/15 hover:border-primary/60 hover:shadow-[0_0_20px_rgba(99,102,241,0.35)] transition-all duration-300 flex flex-col items-center hover:scale-105 active:scale-95"
+                className="group p-2.5 rounded-xl bg-white hover:bg-sky-50/70 border border-slate-200/80 hover:border-sky-300 text-slate-800 shadow-xs transition-all duration-200 flex flex-col items-center hover:scale-105 active:scale-95"
               >
-                <span className="text-xs font-black text-white group-hover:text-primary transition-colors">💻 Member</span>
-                <span className="text-[9px] font-medium text-white/40 group-hover:text-white/70">Developer</span>
+                <span className="text-xs font-black text-slate-900 group-hover:text-sky-700 transition-colors">💻 Member</span>
+                <span className="text-[10px] font-semibold text-slate-500 group-hover:text-sky-800">Developer</span>
               </button>
             </div>
           </div>
 
-          <div className="divider text-[10px] uppercase font-bold tracking-widest text-white/30 mb-6 before:bg-white/10 after:bg-white/10">
+          <div className="divider text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-6 before:bg-slate-200 after:bg-slate-200">
             Or Sign In Manually
           </div>
 
@@ -131,11 +131,11 @@ export default function Login() {
                 placeholder=" "
                 onFocus={() => handleFocus('email')}
                 onBlur={(e) => handleBlur('email', e.target.value)}
-                className="peer w-full bg-white/[0.05] border-b-2 border-white/20 focus:border-primary outline-none py-3 px-3 rounded-t-xl transition-all text-white placeholder-transparent text-sm focus:bg-white/[0.08]"
+                className="peer w-full bg-slate-50/90 border-b-2 border-slate-300 focus:border-primary outline-none py-3 px-3 rounded-t-xl transition-all text-slate-900 placeholder-transparent text-sm focus:bg-white"
               />
               <label
                 className={`absolute left-3 top-3 text-sm transition-all pointer-events-none
-                  ${focused.email ? '-translate-y-6 text-xs text-primary font-bold' : 'text-white/40'}
+                  ${focused.email ? '-translate-y-6 text-xs text-primary font-bold' : 'text-slate-400'}
                 `}
               >
                 Email
@@ -149,11 +149,11 @@ export default function Login() {
                 placeholder=" "
                 onFocus={() => handleFocus('password')}
                 onBlur={(e) => handleBlur('password', e.target.value)}
-                className="peer w-full bg-white/[0.05] border-b-2 border-white/20 focus:border-primary outline-none py-3 px-3 rounded-t-xl transition-all text-white placeholder-transparent text-sm focus:bg-white/[0.08]"
+                className="peer w-full bg-slate-50/90 border-b-2 border-slate-300 focus:border-primary outline-none py-3 px-3 rounded-t-xl transition-all text-slate-900 placeholder-transparent text-sm focus:bg-white"
               />
               <label
                 className={`absolute left-3 top-3 text-sm transition-all pointer-events-none
-                  ${focused.password ? '-translate-y-6 text-xs text-primary font-bold' : 'text-white/40'}
+                  ${focused.password ? '-translate-y-6 text-xs text-primary font-bold' : 'text-slate-400'}
                 `}
               >
                 Password
@@ -162,13 +162,13 @@ export default function Login() {
 
             <button
               type="submit"
-              className="w-full py-3.5 btn btn-primary text-white font-black tracking-wide rounded-xl shadow-[0_0_25px_rgba(99,102,241,0.5)] hover:shadow-[0_0_35px_rgba(99,102,241,0.7)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 border-none"
+              className="w-full py-3.5 btn btn-primary text-white font-black tracking-wide rounded-xl shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 border-none"
             >
               Sign In
             </button>
           </form>
 
-          <p className="mt-6 text-center text-white/50 text-xs">
+          <p className="mt-6 text-center text-slate-500 text-xs">
             Want to test approval flow?{' '}
             <Link to="/register" className="text-primary font-bold hover:underline transition-colors">
               Register New User
