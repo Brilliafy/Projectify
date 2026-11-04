@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { taskApi, teamApi, userApi } from '../api/axios';
-import { CircleDot, CheckCircle2, Clock, Plus, Users, Shield, LayoutGrid, AlertCircle, ChevronDown, Bell, Check, Trash2 } from 'lucide-react';
+import { CircleDot, CheckCircle2, Clock, Plus, Users, LayoutGrid, AlertCircle, ChevronDown, Bell, Check, Trash2, Zap, Activity } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import { useNotification } from '../context/useNotification';
 import { useState, useMemo } from 'react';
@@ -47,6 +47,19 @@ export default function Dashboard() {
     if (selectedTeamId === 'ALL') return allTasks;
     return allTasks.filter((t: Task) => t.teamId === selectedTeamId);
   }, [allTasks, selectedTeamId]);
+
+  const metrics = useMemo(() => {
+    if (!tasks || tasks.length === 0) {
+      return { total: 0, done: 0, inProgress: 0, urgent: 0, myQueue: 0, rate: 0 };
+    }
+    const total = tasks.length;
+    const done = tasks.filter((t) => t.status === 'DONE').length;
+    const inProgress = tasks.filter((t) => t.status === 'IN_PROGRESS').length;
+    const urgent = tasks.filter((t) => t.priority === 'HIGH' && t.status !== 'DONE').length;
+    const myQueue = user ? tasks.filter((t) => t.assigneeIds.includes(user.id) && t.status !== 'DONE').length : 0;
+    const rate = Math.round((done / total) * 100);
+    return { total, done, inProgress, urgent, myQueue, rate };
+  }, [tasks, user]);
 
   // 3. Fetch Users for creator names
   const { data: users } = useQuery<User[]>({
@@ -370,55 +383,78 @@ export default function Dashboard() {
         <div className="lg:col-span-4 space-y-6">
             <TaskStats tasks={tasks || []} />
             
-            <div className="card bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-2xl border-none overflow-hidden relative group">
-                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:rotate-12 transition-transform duration-500">
-                   <Shield size={120} />
+            {/* Workspace & Velocity Intelligence Card */}
+            <div className="card bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-2xl border border-slate-700/50 overflow-hidden relative group rounded-3xl">
+                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:rotate-12 transition-transform duration-500 pointer-events-none">
+                   <Activity size={120} />
                 </div>
                 <div className="card-body p-6 relative">
-                    <div className="flex items-center gap-2 mb-4">
-                       <div className="p-2 bg-white/10 rounded-lg"><Users size={18} /></div>
-                       <h3 className="font-black tracking-tight font-['Outfit']">Context Overview</h3>
+                    <div className="flex items-center justify-between mb-4">
+                       <div className="flex items-center gap-2">
+                         <div className="p-2 bg-primary/20 text-primary rounded-xl"><Zap size={18} /></div>
+                         <div>
+                           <h3 className="font-black tracking-tight font-['Outfit'] text-base">Sprint Intelligence</h3>
+                           <p className="text-[10px] text-white/50 uppercase tracking-widest font-bold font-['Inter']">
+                             {selectedTeamId === 'ALL' ? 'Global Organization' : activeTeam?.name}
+                           </p>
+                         </div>
+                       </div>
+                       <span className="badge badge-sm badge-primary font-black">{metrics.rate}% Complete</span>
                     </div>
                     
-                    <div className="space-y-4">
-                        <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                            <span className="text-[10px] uppercase font-bold tracking-[0.2em] opacity-40 block mb-1 font-['Inter']">
-                                {selectedTeamId === 'ALL' ? 'Network Status' : 'Current Team'}
-                            </span>
-                            <div className="font-bold text-lg truncate font-['Outfit'] tracking-tight">
-                                {selectedTeamId === 'ALL' ? 'Viewing Global Board' : activeTeam?.name}
-                            </div>
+                    {/* Progress Bar */}
+                    <div className="space-y-1.5 mb-4 p-3.5 bg-white/5 rounded-2xl border border-white/10">
+                        <div className="flex items-center justify-between text-xs font-bold font-['Inter']">
+                            <span className="text-white/70">Completion Velocity</span>
+                            <span className="text-primary font-black">{metrics.done} / {metrics.total} Tasks</span>
                         </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="p-3 bg-white/5 rounded-xl border border-white/5">
-                                <span className="text-[9px] uppercase font-bold tracking-[0.2em] opacity-40 block mb-1 font-['Inter']">Role</span>
-                                <div className="text-xs font-bold text-primary tracking-wide font-['Inter']">{user.role.replace('_', ' ')}</div>
-                            </div>
-                            <div className="p-3 bg-white/5 rounded-xl border border-white/5">
-                                <span className="text-[9px] uppercase font-bold tracking-[0.2em] opacity-40 block mb-1 font-['Inter']">Availability</span>
-                                <div className="text-xs font-bold flex items-center gap-1 font-['Inter'] tracking-wide">Available</div>
-                            </div>
+                        <div className="w-full bg-white/10 rounded-full h-2.5 overflow-hidden">
+                            <div 
+                              className="bg-gradient-to-r from-primary to-emerald-400 h-full rounded-full transition-all duration-700 ease-out"
+                              style={{ width: `${Math.max(metrics.rate, 4)}%` }}
+                            />
                         </div>
-                        
-                        {selectedTeamId !== 'ALL' && activeTeam?.members && (
-                            <div className="pt-2">
-                                <span className="text-[9px] uppercase font-bold tracking-widest opacity-40 block mb-2">Team Sync</span>
-                                <div className="flex -space-x-2">
-                                    {activeTeam.members.slice(0, 5).map((mId: number, i: number) => (
-                                        <div key={i} className="w-8 h-8 rounded-full bg-slate-700 border-2 border-slate-900 flex items-center justify-center text-[10px] font-bold">
-                                            {getCreatorName(mId)[0]}
-                                        </div>
-                                    ))}
-                                    {activeTeam.members.length > 5 && (
-                                        <div className="w-8 h-8 rounded-full bg-primary border-2 border-slate-900 flex items-center justify-center text-[10px] font-bold">
-                                            +{activeTeam.members.length - 5}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
                     </div>
+
+                    {/* 2x2 Actionable Metrics Grid */}
+                    <div className="grid grid-cols-2 gap-2.5">
+                        <div className="p-3 bg-white/5 rounded-xl border border-white/5 hover:border-white/15 transition-colors">
+                            <span className="text-[9px] uppercase font-bold tracking-[0.15em] text-white/40 block mb-1 font-['Inter']">🔥 Critical / High</span>
+                            <div className="text-base font-black text-rose-400 font-['Outfit']">{metrics.urgent} <span className="text-[10px] font-normal text-white/40">active</span></div>
+                        </div>
+                        <div className="p-3 bg-white/5 rounded-xl border border-white/5 hover:border-white/15 transition-colors">
+                            <span className="text-[9px] uppercase font-bold tracking-[0.15em] text-white/40 block mb-1 font-['Inter']">⚡ In Progress</span>
+                            <div className="text-base font-black text-amber-400 font-['Outfit']">{metrics.inProgress} <span className="text-[10px] font-normal text-white/40">active</span></div>
+                        </div>
+                        <div className="p-3 bg-white/5 rounded-xl border border-white/5 hover:border-white/15 transition-colors">
+                            <span className="text-[9px] uppercase font-bold tracking-[0.15em] text-white/40 block mb-1 font-['Inter']">🎯 My Queue</span>
+                            <div className="text-base font-black text-primary font-['Outfit']">{metrics.myQueue} <span className="text-[10px] font-normal text-white/40">assigned</span></div>
+                        </div>
+                        <div className="p-3 bg-white/5 rounded-xl border border-white/5 hover:border-white/15 transition-colors">
+                            <span className="text-[9px] uppercase font-bold tracking-[0.15em] text-white/40 block mb-1 font-['Inter']">👥 Team Size</span>
+                            <div className="text-base font-black text-cyan-400 font-['Outfit']">
+                                {selectedTeamId !== 'ALL' && activeTeam?.members ? activeTeam.members.length : (users?.length || 0)} <span className="text-[10px] font-normal text-white/40">members</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* Active Contributors Roster */}
+                    {activeTeam?.members && activeTeam.members.length > 0 && (
+                        <div className="pt-2">
+                            <span className="text-[9px] uppercase font-bold tracking-widest text-white/40 block mb-2">Active Contributors</span>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                                {activeTeam.members.slice(0, 6).map((mId: number) => {
+                                    const mUser = users?.find(u => u.id === mId);
+                                    return (
+                                        <div key={mId} className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 rounded-lg border border-white/10 text-xs" title={mUser?.fullName}>
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                            <span className="font-semibold truncate max-w-[90px]">{mUser?.fullName.split(' ')[0] || `User ${mId}`}</span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

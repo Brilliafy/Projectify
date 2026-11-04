@@ -5,6 +5,7 @@ import {
   INITIAL_TASKS,
   INITIAL_COMMENTS,
   INITIAL_NOTIFICATIONS,
+  createNotificationsForUser,
 } from './mockData';
 import type { User, Team, Task, Notification, Comment } from '../types';
 
@@ -35,7 +36,16 @@ function setStorage<T>(key: string, val: T): void {
   }
 }
 
+const DEMO_SCHEMA_VERSION = 'v2_rich_discussions_notifications';
+
 export function initDemoStorage(): void {
+  const currentVersion = localStorage.getItem('projectify_demo_version');
+  if (currentVersion !== DEMO_SCHEMA_VERSION) {
+    resetDemoData();
+    localStorage.setItem('projectify_demo_version', DEMO_SCHEMA_VERSION);
+    return;
+  }
+
   if (!localStorage.getItem(STORAGE_KEYS.USERS)) {
     setStorage(STORAGE_KEYS.USERS, INITIAL_USERS);
   }
@@ -550,7 +560,11 @@ export async function handleMockRequest(config: InternalAxiosRequestConfig): Pro
 
     // GET / (fetch notifications for user)
     if (method === 'get' && (sub === '' || sub === '/')) {
-      const userNotifs = notifs.filter((n) => n.userId === currentId);
+      let userNotifs = notifs.filter((n) => n.userId === currentId);
+      if (userNotifs.length === 0) {
+        userNotifs = createNotificationsForUser(currentId);
+        setStorage(STORAGE_KEYS.NOTIFICATIONS, [...notifs, ...userNotifs]);
+      }
       return createSuccessResponse(userNotifs, config);
     }
   }

@@ -4,7 +4,6 @@ import { LayoutDashboard, Users, ShieldAlert, LogOut, CheckSquare, ChevronRight 
 import { type ReactNode, useState } from 'react';
 import clsx from 'clsx';
 import ProjectifyIcon from '../assets/icon.webp';
-import { resetDemoData } from '../demo/mockBackend';
 
 export default function Layout({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
@@ -167,25 +166,6 @@ export default function Layout({ children }: { children: ReactNode }) {
 
 
       <main className="flex-1 overflow-hidden relative flex flex-col">
-        {/* Top Demo Banner */}
-        <div className="bg-gradient-to-r from-primary/10 via-purple-500/10 to-primary/10 border-b border-primary/20 px-4 py-1.5 flex items-center justify-between text-xs z-30 shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="font-bold text-primary">Interactive Showcase Demo</span>
-            <span className="hidden sm:inline text-base-content/60">• Running 100% offline via browser LocalStorage</span>
-          </div>
-          <button
-            onClick={() => {
-              resetDemoData();
-              window.location.reload();
-            }}
-            className="btn btn-ghost btn-xs text-[10px] font-bold text-primary hover:bg-primary/20 rounded-lg px-2 h-6"
-            title="Restore original sample tasks, teams, and comments"
-          >
-            ↻ Reset Sample Data
-          </button>
-        </div>
-
         <div className="flex-1 overflow-y-auto no-scrollbar scroll-smooth relative">
           {children}
         </div>

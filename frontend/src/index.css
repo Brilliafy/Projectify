@@ -250,3 +250,107 @@ iframe[title="Netlify"] {
   pointer-events: none !important;
 }
 
+/* ============================================================================
+   GOD-TIER ANIMATIONS: FLUID AURORA MESH & ROTATING BORDER BEAM
+   ============================================================================ */
+
+@keyframes aurora-1 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(80px, -60px) scale(1.2);
+  }
+  66% {
+    transform: translate(-60px, 70px) scale(0.9);
+  }
+}
+
+@keyframes aurora-2 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(-70px, 80px) scale(1.15);
+  }
+  66% {
+    transform: translate(60px, -50px) scale(0.92);
+  }
+}
+
+@keyframes aurora-3 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(50px, 50px) scale(1.25);
+  }
+}
+
+@keyframes border-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-aurora-1 {
+  animation: aurora-1 16s ease-in-out infinite alternate;
+}
+
+.animate-aurora-2 {
+  animation: aurora-2 20s ease-in-out infinite alternate;
+}
+
+.animate-aurora-3 {
+  animation: aurora-3 24s ease-in-out infinite alternate;
+}
+
+/* God-tier Spinning Conic Gradient Border Beam */
+.border-beam-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.75rem;
+  padding: 1.5px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.border-beam-card::before {
+  content: '';
+  position: absolute;
+  top: -100%;
+  left: -100%;
+  width: 300%;
+  height: 300%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 45deg,
+    #6366f1 90deg,
+    #a855f7 140deg,
+    #38bdf8 190deg,
+    #ec4899 240deg,
+    transparent 280deg,
+    transparent 360deg
+  );
+  animation: border-spin 4.5s linear infinite;
+  z-index: 0;
+}
+
+.border-beam-inner {
+  position: relative;
+  border-radius: calc(1.75rem - 1.5px);
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  z-index: 1;
+}
+
+.dot-pattern-bg {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+
