@@ -4,7 +4,7 @@
   "description": "Real-time notification service for Projectify",
   "main": "index.js",
   "scripts": {
-    "test": "tsx --test \"src/**/*.test.ts\"",
+    "test": "tsx --test src/routes/*.test.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts"

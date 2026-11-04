@@ -2,9 +2,9 @@ name: Continuous Integration
 
 on:
   push:
-    branches: [ "master", "main", "feature/**" ]
+    branches: [ "master", "main", "demo", "feature/**" ]
   pull_request:
-    branches: [ "master", "main" ]
+    branches: [ "master", "main", "demo" ]
 
 jobs:
   test-and-build:
@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [22.x]
 
     steps:
       - name: Checkout code
@@ -43,8 +43,8 @@ jobs:
         working-directory: ./user-service
         run: |
           npm ci
-          npm test
           npm run build
+          npm test
 
       # Team Service Validation
       - name: Validate Team Service
