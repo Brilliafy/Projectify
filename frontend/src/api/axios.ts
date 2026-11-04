@@ -1,10 +1,21 @@
 import axios, { type InternalAxiosRequestConfig, AxiosHeaders } from 'axios';
+import { handleMockRequest } from '../demo/mockBackend';
 
-// Base Clients
-// Base Clients - Use relative paths so Nginx Gateway handles routing whether on localhost or VM
-export const userApi = axios.create({ baseURL: '/api/users' });
-export const teamApi = axios.create({ baseURL: '/api/teams' });
-export const taskApi = axios.create({ baseURL: '/api/tasks' });
+// Base Clients configured with Offline Mock Adapter for Static Demo
+export const userApi = axios.create({
+  baseURL: '/api/users',
+  adapter: handleMockRequest,
+});
+
+export const teamApi = axios.create({
+  baseURL: '/api/teams',
+  adapter: handleMockRequest,
+});
+
+export const taskApi = axios.create({
+  baseURL: '/api/tasks',
+  adapter: handleMockRequest,
+});
 
 // Token Interceptor Function
 const addToken = (config: InternalAxiosRequestConfig) => {

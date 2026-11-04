@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './useAuth';
 import { notificationApi } from '../api/notificationApi';
+import { demoNotificationBus } from '../demo/mockBackend';
 import toast from 'react-hot-toast';
 import type { Notification } from '../types';
 import { NotificationContext } from './notificationContextDef';
@@ -34,30 +35,51 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     if (!user || !token) return;
 
-    const socketUrl = '/';
-    const newSocket = io(socketUrl, {
-      auth: { token },
-      transports: ['websocket', 'polling'],
-    });
+    // Listen to offline demo notifications
+    const handleDemoNotif = (e: Event) => {
+      const notif = (e as CustomEvent<Notification>).detail;
+      if (!user || notif.userId === user.id) {
+        setNotifications((prev) => [notif, ...prev]);
+        toast(notif.message, {
+          icon: '🔔',
+          style: {
+            borderRadius: '10px',
+            background: '#333',
+            color: '#fff',
+          },
+        });
+      }
+    };
+    demoNotificationBus.addEventListener('notification', handleDemoNotif);
 
-    newSocket.on('connect', () => {
-      console.log('Connected to Notification Service');
-    });
-
-    newSocket.on('notification', (notif: Notification) => {
-      setNotifications((prev) => [notif, ...prev]);
-      toast(notif.message, {
-        icon: '🔔',
-        style: {
-          borderRadius: '10px',
-          background: '#333',
-          color: '#fff',
-        },
+    // If socket server is available, connect, otherwise gracefully fallback
+    let newSocket: ReturnType<typeof io> | null = null;
+    try {
+      newSocket = io('/', {
+        auth: { token },
+        transports: ['websocket', 'polling'],
+        timeout: 2000,
+        reconnectionAttempts: 1,
       });
-    });
+
+      newSocket.on('notification', (notif: Notification) => {
+        setNotifications((prev) => [notif, ...prev]);
+        toast(notif.message, {
+          icon: '🔔',
+          style: {
+            borderRadius: '10px',
+            background: '#333',
+            color: '#fff',
+          },
+        });
+      });
+    } catch {
+      // offline mode
+    }
 
     return () => {
-      newSocket.disconnect();
+      demoNotificationBus.removeEventListener('notification', handleDemoNotif);
+      newSocket?.disconnect();
     };
   }, [user, token]);
 

@@ -57,11 +57,8 @@ export default function LandingPage() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <Link to="/register" className="btn btn-primary btn-lg rounded-2xl px-10 shadow-xl shadow-primary/20 hover:scale-105 transition-transform text-white font-bold text-lg h-14 min-h-[3.5rem] flex items-center gap-2">
-                            Start Building Free <ArrowRight size={20} />
-                        </Link>
-                        <Link to="/login" className="px-10 py-3.5 rounded-2xl font-bold text-lg text-base-content/70 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-800">
-                            Live Demo
+                        <Link to="/login" className="btn btn-primary btn-lg rounded-2xl px-10 shadow-xl shadow-primary/20 hover:scale-105 transition-transform text-white font-bold text-lg h-14 min-h-[3.5rem] flex items-center gap-2">
+                            Launch Interactive Demo <ArrowRight size={20} />
                         </Link>
                     </div>
                 </div>
