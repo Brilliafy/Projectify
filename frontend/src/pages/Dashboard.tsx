@@ -125,9 +125,8 @@ export default function Dashboard() {
                 <LayoutGrid size={12} /> Dashboard Context
               </div>
 
-             
-             {user?.role !== 'ADMIN' && (
-                <div className="relative z-50">
+              {/* Notification Bell */}
+              <div className="relative z-50">
                     <button 
                         onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
                         className="relative group flex items-center gap-2 transition-all hover:text-primary"
@@ -202,7 +201,6 @@ export default function Dashboard() {
                         </>
                     )}
                 </div>
-             )}
           </div>
           
           <div className="flex items-center gap-4">

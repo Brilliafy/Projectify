@@ -183,6 +183,18 @@ export const INITIAL_COMMENTS: Record<string, Comment[]> = {
       creatorId: 3,
       creatorName: 'Sarah Chen (Senior SRE)',
       creatorRole: 'MEMBER',
+      attachments: [
+        {
+          _id: 'att-101-1',
+          originalName: 'jaeger-trace-waterfall.jpg',
+          fileName: 'jaeger-trace-waterfall.jpg',
+          mimeType: 'image/jpeg',
+          size: 428000,
+          gcsFileName: 'mock-jaeger-trace-waterfall.jpg',
+          url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80',
+          uploadedAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+        },
+      ],
       createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
     },
     {
@@ -212,6 +224,18 @@ export const INITIAL_COMMENTS: Record<string, Comment[]> = {
       creatorId: 3,
       creatorName: 'Sarah Chen (Senior SRE)',
       creatorRole: 'MEMBER',
+      attachments: [
+        {
+          _id: 'att-102-1',
+          originalName: 'pgbouncer-latency-benchmark.jpg',
+          fileName: 'pgbouncer-latency-benchmark.jpg',
+          mimeType: 'image/jpeg',
+          size: 385000,
+          gcsFileName: 'mock-pgbouncer-benchmark.jpg',
+          url: 'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=1200&q=80',
+          uploadedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+        },
+      ],
       createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
     },
     {
@@ -232,6 +256,18 @@ export const INITIAL_COMMENTS: Record<string, Comment[]> = {
       creatorId: 1,
       creatorName: 'Elena Rostova (System Admin)',
       creatorRole: 'ADMIN',
+      attachments: [
+        {
+          _id: 'att-103-1',
+          originalName: 'ssl-labs-a-grade-audit.jpg',
+          fileName: 'ssl-labs-a-grade-audit.jpg',
+          mimeType: 'image/jpeg',
+          size: 512000,
+          gcsFileName: 'mock-ssl-labs-audit.jpg',
+          url: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80',
+          uploadedAt: new Date(Date.now() - 4 * 86400000).toISOString(),
+        },
+      ],
       createdAt: new Date(Date.now() - 4 * 86400000).toISOString(),
     },
     {
@@ -252,6 +288,18 @@ export const INITIAL_COMMENTS: Record<string, Comment[]> = {
       creatorId: 5,
       creatorName: 'Amara Okafor (UX / Systems Designer)',
       creatorRole: 'MEMBER',
+      attachments: [
+        {
+          _id: 'att-104-1',
+          originalName: 'figma-wcag-contrast-grid.jpg',
+          fileName: 'figma-wcag-contrast-grid.jpg',
+          mimeType: 'image/jpeg',
+          size: 610000,
+          gcsFileName: 'mock-figma-contrast.jpg',
+          url: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1200&q=80',
+          uploadedAt: new Date(Date.now() - 6 * 86400000).toISOString(),
+        },
+      ],
       createdAt: new Date(Date.now() - 6 * 86400000).toISOString(),
     },
     {
@@ -272,6 +320,18 @@ export const INITIAL_COMMENTS: Record<string, Comment[]> = {
       creatorId: 3,
       creatorName: 'Sarah Chen (Senior SRE)',
       creatorRole: 'MEMBER',
+      attachments: [
+        {
+          _id: 'att-105-1',
+          originalName: 'offline-architecture-diagram.jpg',
+          fileName: 'offline-architecture-diagram.jpg',
+          mimeType: 'image/jpeg',
+          size: 470000,
+          gcsFileName: 'mock-architecture-diagram.jpg',
+          url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80',
+          uploadedAt: new Date(Date.now() - 1 * 86400000).toISOString(),
+        },
+      ],
       createdAt: new Date(Date.now() - 1 * 86400000).toISOString(),
     },
     {
@@ -416,6 +476,38 @@ export const NOTIFICATION_POOL: Array<{
 
 // Helper to seed 2-3 deterministic demo notifications for a specific user
 export function createNotificationsForUser(userId: number): Notification[] {
+  if (userId === 1) {
+    return [
+      {
+        _id: 'notif-admin-1',
+        userId: 1,
+        type: 'TASK_UPDATED',
+        message: 'New account pending approval: "John Pendelton (New Hire)" (john.pending@example.com)',
+        relatedId: '6',
+        read: false,
+        createdAt: new Date(Date.now() - 20 * 60000).toISOString(),
+      },
+      {
+        _id: 'notif-admin-2',
+        userId: 1,
+        type: 'TASK_ASSIGNED',
+        message: 'System Security Audit: SSL Labs A+ rating verified for Ingress gateway',
+        relatedId: 'task-103',
+        read: false,
+        createdAt: new Date(Date.now() - 2 * 3600000).toISOString(),
+      },
+      {
+        _id: 'notif-admin-3',
+        userId: 1,
+        type: 'COMMENT_ADDED',
+        message: 'Marcus Vance commented on HSTS Security Configuration',
+        relatedId: 'task-103',
+        read: true,
+        createdAt: new Date(Date.now() - 1 * 86400000).toISOString(),
+      },
+    ];
+  }
+
   // Use user id to pick 2-3 deterministic notifications from the pool
   const offset = (userId * 7) % NOTIFICATION_POOL.length;
   const sample1 = NOTIFICATION_POOL[offset % NOTIFICATION_POOL.length];

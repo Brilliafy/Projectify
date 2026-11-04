@@ -36,7 +36,7 @@ function setStorage<T>(key: string, val: T): void {
   }
 }
 
-const DEMO_SCHEMA_VERSION = 'v2_rich_discussions_notifications';
+const DEMO_SCHEMA_VERSION = 'v3_admin_notifications_and_image_attachments';
 
 export function initDemoStorage(): void {
   const currentVersion = localStorage.getItem('projectify_demo_version');
@@ -167,6 +167,22 @@ export async function handleMockRequest(config: InternalAxiosRequestConfig): Pro
         createdAt: new Date().toISOString(),
       };
       setStorage(STORAGE_KEYS.USERS, [...users, newUser]);
+
+      // Automatically notify administrators of new registration awaiting approval
+      const adminUsers = users.filter((u) => u.role === 'ADMIN');
+      const notifications = getStorage<Notification[]>(STORAGE_KEYS.NOTIFICATIONS, INITIAL_NOTIFICATIONS);
+      const newNotifs: Notification[] = adminUsers.map((admin) => ({
+        _id: `notif-pending-${newUser.id}-${Date.now()}`,
+        userId: admin.id,
+        type: 'TASK_UPDATED',
+        message: `New account pending approval: "${fullName}" (${email})`,
+        relatedId: String(newUser.id),
+        read: false,
+        createdAt: new Date().toISOString(),
+      }));
+      setStorage(STORAGE_KEYS.NOTIFICATIONS, [...newNotifs, ...notifications]);
+      newNotifs.forEach((n) => demoNotificationBus.dispatchEvent(new CustomEvent('notification', { detail: n })));
+
       return createSuccessResponse(
         { message: 'Account created. Awaiting admin approval.', id: newUser.id },
         config
