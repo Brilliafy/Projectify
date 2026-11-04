@@ -79,23 +79,16 @@ export default function Login() {
             <p className="mt-1 text-xs text-slate-500 tracking-wide font-medium">Interactive Showcase Demo</p>
           </div>
 
-          {/* 1-Click Demo Login Personas */}
-          <div className="mb-6 p-4 rounded-2xl bg-slate-50 border border-slate-200/70 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-black uppercase tracking-wider text-primary flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                1-Click Demo Personas
-              </span>
-              <span className="badge badge-xs bg-indigo-100 text-primary border-none font-bold px-2 py-1">Instant Access</span>
-            </div>
-            <p className="text-[11px] text-slate-500 mb-3">
+          {/* Quick Persona Selection */}
+          <div className="mb-6 p-4 rounded-2xl bg-slate-50/90 border border-slate-200/80 shadow-xs">
+            <p className="text-xs font-medium text-slate-600 mb-3 text-center">
               Choose a persona to explore role-based permissions:
             </p>
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => quickLogin('admin@projectify.com')}
-                className="group p-2.5 rounded-xl bg-white hover:bg-amber-50/70 border border-slate-200/80 hover:border-amber-300 text-slate-800 shadow-xs transition-all duration-200 flex flex-col items-center hover:scale-105 active:scale-95"
+                className="group p-2.5 rounded-xl bg-white hover:bg-amber-50/80 border border-slate-200/80 hover:border-amber-400 text-slate-800 shadow-xs transition-all duration-200 flex flex-col items-center hover:scale-105 active:scale-95"
               >
                 <span className="text-xs font-black text-slate-900 group-hover:text-amber-700 transition-colors">👑 Admin</span>
                 <span className="text-[10px] font-semibold text-slate-500 group-hover:text-amber-800">Full Control</span>
@@ -103,17 +96,17 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => quickLogin('leader@projectify.com')}
-                className="group p-2.5 rounded-xl bg-white hover:bg-indigo-50/70 border border-slate-200/80 hover:border-indigo-300 text-slate-800 shadow-xs transition-all duration-200 flex flex-col items-center hover:scale-105 active:scale-95"
+                className="group p-2.5 rounded-xl bg-white hover:bg-indigo-50/80 border border-slate-200/80 hover:border-indigo-400 text-slate-800 shadow-xs transition-all duration-200 flex flex-col items-center hover:scale-105 active:scale-95"
               >
-                <span className="text-xs font-black text-slate-900 group-hover:text-primary transition-colors">🚀 Leader</span>
+                <span className="text-xs font-black text-slate-900 group-hover:text-indigo-600 transition-colors">🚀 Leader</span>
                 <span className="text-[10px] font-semibold text-slate-500 group-hover:text-indigo-800">Team Lead</span>
               </button>
               <button
                 type="button"
                 onClick={() => quickLogin('sarah@projectify.com')}
-                className="group p-2.5 rounded-xl bg-white hover:bg-sky-50/70 border border-slate-200/80 hover:border-sky-300 text-slate-800 shadow-xs transition-all duration-200 flex flex-col items-center hover:scale-105 active:scale-95"
+                className="group p-2.5 rounded-xl bg-white hover:bg-sky-50/80 border border-slate-200/80 hover:border-sky-400 text-slate-800 shadow-xs transition-all duration-200 flex flex-col items-center hover:scale-105 active:scale-95"
               >
-                <span className="text-xs font-black text-slate-900 group-hover:text-sky-700 transition-colors">💻 Member</span>
+                <span className="text-xs font-black text-slate-900 group-hover:text-sky-600 transition-colors">💻 Member</span>
                 <span className="text-[10px] font-semibold text-slate-500 group-hover:text-sky-800">Developer</span>
               </button>
             </div>
@@ -162,7 +155,7 @@ export default function Login() {
 
             <button
               type="submit"
-              className="w-full py-3.5 btn btn-primary text-white font-black tracking-wide rounded-xl shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 border-none"
+              className="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold tracking-wide rounded-xl shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 border-none cursor-pointer text-sm"
             >
               Sign In
             </button>
