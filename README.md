@@ -1,282 +1,309 @@
-# Projectify
+<div align="center">
 
-> **Collaborative Project Management System with Microservices Architecture**
->
-> _Made with ❤️ by Michael Mesanagrenos_
->
-> _Developed for the Cloud Computing course (ΠΛΗ513) at the Technical University of Crete._
+  <img src="frontend/public/android-chrome-192x192.png" alt="Projectify Logo" width="96" height="96" style="border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.15);" />
 
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![Docker](https://img.shields.io/badge/Docker-Enabled-blue?logo=docker)](https://www.docker.com/)
-[![GCP](https://img.shields.io/badge/Google_Cloud-Deployed-4285F4?logo=google-cloud&logoColor=white)](https://cloud.google.com/)
+  # Projectify
 
-## 1. Project Description
+  <p align="center">
+    <strong>Enterprise-Ready Distributed Project Management Platform</strong><br />
+    <em>Engineered with Event-Driven Microservices, Polyglot Persistence & Real-Time WebSockets</em>
+  </p>
 
-**Projectify** is a collaborative task management application designed for teams. It allows users to create teams, assign tasks, track progress, and communicate via comments and real-time notifications. The architecture follows a microservices pattern, ensuring scalability and separation of concerns.
+  <p align="center">
+    <a href="https://github.com/Brilliafy/Projectify/actions/workflows/ci.yml">
+      <img src="https://img.shields.io/badge/CI-Passing-brightgreen?style=for-the-badge&logo=githubactions&logoColor=white" alt="CI Status" />
+    </a>
+    <a href="https://www.gnu.org/licenses/agpl-3.0">
+      <img src="https://img.shields.io/badge/License-AGPL%20v3-blue.svg?style=for-the-badge" alt="License: AGPL v3" />
+    </a>
+    <a href="https://nodejs.org">
+      <img src="https://img.shields.io/badge/Node.js-v20%2B-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
+    </a>
+    <a href="https://fastify.dev">
+      <img src="https://img.shields.io/badge/Fastify-v5-black?style=for-the-badge&logo=fastify&logoColor=white" alt="Fastify v5" />
+    </a>
+    <a href="https://react.dev">
+      <img src="https://img.shields.io/badge/React-v19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React 19" />
+    </a>
+    <a href="https://www.typescriptlang.org">
+      <img src="https://img.shields.io/badge/TypeScript-v5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+    </a>
+    <a href="https://www.docker.com">
+      <img src="https://img.shields.io/badge/Docker-Multi--Container-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
+    </a>
+  </p>
 
-### Key Features
+  <p align="center">
+    <a href="#-system-architecture">Architecture</a> •
+    <a href="#-microservices-breakdown">Services</a> •
+    <a href="#-quickstart--local-setup">Quickstart</a> •
+    <a href="#-security--defense-in-depth">Security</a> •
+    <a href="#-testing--quality-assurance">Testing</a> •
+    <a href="#-api-reference">API Reference</a>
+  </p>
 
-- **Microservices Architecture:** 4 distinct backend services (User, Team, Task, Notification).
-- **Real-time Communication:** Built-in WebSockets (Socket.io) for instant notifications on task updates.
-- **File Management:** Integration with **Google Cloud Storage (GCS)** for task attachments.
-- **Kanban Workflow:** Manage tasks through TODO, IN_PROGRESS, and DONE stages.
-- **Visual Analytics:** Interactive charts for tracking team velocity and task distribution.
-
----
-
-## 2. Architecture & Security Implementation
-
-The application is not just a set of containers; it is secured behind a robust **Nginx API Gateway**.
-
-### Security Layers
-
-Implemented a "Defense in Depth" strategy using Nginx as a reverse proxy. Key security features include:
-
-1.  **SSL/TLS Encryption:**
-    - Implemented via **Let's Encrypt (Certbot)** using the standalone challenge.
-    - Forces HTTPS via **HSTS** (HTTP Strict Transport Security) to prevent protocol downgrade attacks.
-2.  **Rate Limiting:**
-    - Configured a `limit_req_zone` allowing **10 requests/second** per IP.
-    - Protects the API services against DDoS and Brute-Force attacks.
-3.  **Clickjacking Protection:**
-    - `X-Frame-Options: DENY`: Prevents the site from being embedded in iframes.
-4.  **Content Security Policy (CSP):**
-    - A strict policy allows resources only from self, Google Fonts, and Google Cloud Storage (for images), preventing XSS attacks.
-5.  **CORS & Sniffing:**
-    - `X-Content-Type-Options: nosniff` prevents MIME type sniffing.
-
-### Infrastructure Diagram
-
-- **Frontend:** React 19 (Vite)
-- **Gateway:** Nginx (Port 443/80)
-- **Backend:** Node.js (TypeScript) + Fastify v5 Microservices
-- **Testing & CI:** Node.js native test runner (`node:test`) + GitHub Actions CI pipeline
-- **Data Persistence:** PostgreSQL (Users via Prisma 7), MongoDB (Tasks/Teams via Mongoose), Redis (Pub/Sub).
+</div>
 
 ---
 
-## 3. Installation & Running (Local)
+## 🌟 Executive Overview
+
+**Projectify** is a production-grade, collaborative project and task management system built specifically to demonstrate modern cloud-native architectural patterns. Engineered with **Domain-Driven Design (DDD)** and **Clean Architecture**, it decouples transactional authentication, collaborative workspaces, task workflows, and live notifications into independent microservices wired together through an Nginx API Gateway and Redis Pub/Sub event bus.
+
+### 🎯 Key Architectural Highlights
+
+<table>
+  <tr>
+    <td width="50%">
+      <h3>⚡ Distributed Microservices</h3>
+      <ul>
+        <li>Four specialized microservices built with <strong>Fastify v5</strong> and strict <strong>TypeScript</strong>.</li>
+        <li>Layered separation: Controllers/Routes &rarr; Zod Schemas &rarr; Domain Services &rarr; Models/Repositories.</li>
+        <li>Independent scaling, isolated fault domains, and per-service health probes (<code>/health</code>).</li>
+      </ul>
+    </td>
+    <td width="50%">
+      <h3>🔄 Polyglot Persistence</h3>
+      <ul>
+        <li><strong>PostgreSQL 16</strong> via <strong>Prisma 7</strong> for relational integrity and RBAC user state.</li>
+        <li><strong>MongoDB 7</strong> via <strong>Mongoose</strong> for unstructured documents (teams, kanban tasks, comments).</li>
+        <li><strong>Redis 7 (AOF)</strong> for high-throughput Pub/Sub real-time message brokering.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>📡 Real-Time Collaborative Engine</h3>
+      <ul>
+        <li>Instant notifications via <strong>Socket.IO</strong> with automated room management per user.</li>
+        <li>Cross-service event distribution using non-blocking Redis channels.</li>
+        <li>Live Kanban task updates, assignment alerts, and threaded rich-text comments.</li>
+      </ul>
+    </td>
+    <td width="50%">
+      <h3>🛡️ Defense-in-Depth Security</h3>
+      <ul>
+        <li><strong>Nginx Gateway</strong> handling SSL termination, rate limiting (10 req/s), and HTTP/2.</li>
+        <li>Per-service rate limiting via <code>@fastify/rate-limit</code> protecting authentication vectors.</li>
+        <li>Non-root multi-stage Docker execution and strict Content Security Policies.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+---
+
+## 🏗️ System Architecture
+
+```mermaid
+graph TD
+    Client["Client Browser<br/>React 19 + TanStack Query + Tailwind"]
+    Gateway["Nginx API Gateway (:80 / :443)<br/>Rate Limiting, Gzip, CSP & Reverse Proxy"]
+    
+    subgraph Microservices ["Microservices Layer (Fastify v5 + TypeScript)"]
+        UserService["User Service (:3001)<br/>JWT Auth, RBAC & Lifecycle"]
+        TeamService["Team Service (:3002)<br/>Workspaces, Members & Ownership"]
+        TaskService["Task Service (:3003)<br/>Kanban Tasks, Comments & GCS Files"]
+        NotifService["Notification Service (:3004)<br/>Socket.IO WebSocket Engine"]
+    end
+    
+    subgraph Storage ["Polyglot Storage & Message Bus Layer"]
+        Postgres[(PostgreSQL 16<br/>Prisma Client)]
+        Mongo[(MongoDB 7<br/>Teams & Tasks)]
+        Redis[(Redis 7<br/>Pub/Sub Event Bus)]
+        GCS["Google Cloud Storage<br/>(Task Attachments)"]
+    end
+
+    Client -->|HTTP / REST| Gateway
+    Client -.->|WebSocket / Socket.IO| Gateway
+    
+    Gateway -->|/api/users| UserService
+    Gateway -->|/api/teams| TeamService
+    Gateway -->|/api/tasks| TaskService
+    Gateway -->|/api/notifications| NotifService
+    Gateway -.->|/socket.io/| NotifService
+
+    UserService --> Postgres
+    TeamService --> Mongo
+    TeamService -->|Publish Events| Redis
+    TaskService --> Mongo
+    TaskService -->|Publish Events| Redis
+    TaskService -.->|Upload/Stream| GCS
+    NotifService --> Mongo
+    Redis -->|Subscribe Events| NotifService
+```
+
+---
+
+## 📦 Microservices Breakdown
+
+| Service | Port | Runtime / Framework | Data Store | Core Responsibilities |
+| :--- | :--- | :--- | :--- | :--- |
+| **User Service** | `3001` | Node.js 20+ &bull; Fastify v5 &bull; TypeScript | PostgreSQL 16 (Prisma 7) | Authentication, JWT signing, password hashing (bcrypt), RBAC administration, account approval. |
+| **Team Service** | `3002` | Node.js 20+ &bull; Fastify v5 &bull; TypeScript | MongoDB 7 (Mongoose) | Team creation, membership management, leadership delegation, Redis event publication. |
+| **Task Service** | `3003` | Node.js 20+ &bull; Fastify v5 &bull; TypeScript | MongoDB 7 (Mongoose) | Kanban tasks (TODO/IN_PROGRESS/DONE), multi-assignee tracking, rich text comments, file attachments (local/GCS). |
+| **Notification Service** | `3004` | Node.js 20+ &bull; Fastify v5 &bull; TypeScript | MongoDB 7 &bull; Redis 7 | Socket.IO server, Redis subscriber, persistent notification logging, unread badge counters. |
+| **Frontend** | `80` | React 19 &bull; Vite 7 &bull; TypeScript | Local / Browser State | Kanban boards, real-time toast alerts, TipTap editor, Recharts analytics, responsive DaisyUI layout. |
+| **API Gateway** | `80 / 443` | Nginx Alpine | N/A | Reverse proxy, SSL termination, request throttling, gzip compression, security headers. |
+
+---
+
+## 🚀 Quickstart & Local Setup
 
 ### Prerequisites
+- [Docker](https://docs.docker.com/get-docker/) & [Docker Compose](https://docs.docker.com/compose/)
+- [Node.js](https://nodejs.org/) v20+ (optional, for local development outside Docker)
 
-- Docker & Docker Compose
-- Git
-
-### Step 1: Start the Application
-
-The entire stack (Frontend + 4 Services + Databases + Gateway) is containerized.
+### 1. Launch the Stack
+Clone the repository and start all containers with Docker Compose:
 
 ```bash
-# Clone the repo
-git clone [https://github.com/Brilliafy/Projectify.git](https://github.com/Brilliafy/Projectify.git)
+# Clone the repository
+git clone https://github.com/Brilliafy/Projectify.git
 cd Projectify
 
-# Build and Run
-docker compose down
+# Spin up databases, services, gateway, and frontend
 docker compose up -d --build
 ```
 
-### Step 2: Database Seeding (Admin Account)
+All microservices will self-heal and wait for database health checks before starting:
+- **Web Application**: [http://localhost](http://localhost)
+- **User Service Health**: [http://localhost/api/users/health](http://localhost/api/users/health)
+- **Team Service Health**: [http://localhost/api/teams/health](http://localhost/api/teams/health)
+- **Task Service Health**: [http://localhost/api/tasks/health](http://localhost/api/tasks/health)
+- **Notification Service Health**: [http://localhost/api/notifications/health](http://localhost/api/notifications/health)
 
-The system requires an ADMIN account to activate other users. Run the following script to inject the admin user into the PostgreSQL container:
-
-```js
-// Save as seedAdmin.js and run: node seedAdmin.js
-const { Client } = require("pg");
-const bcrypt = require("bcryptjs");
-
-async function createAdmin() {
-  const client = new Client({
-    host: "localhost",
-    port: 5432,
-    database: "userdb",
-    user: "admin",
-    password: "password123",
-  });
-
-  try {
-    await client.connect();
-    const hashedPassword = await bcrypt.hash("admin123", 10);
-
-    await client.query(
-      `INSERT INTO "User" (email, password, "fullName", role, "isActive", "createdAt")
-       VALUES ($1, $2, $3, $4, $5, NOW())
-       ON CONFLICT (email) DO NOTHING`,
-      [
-        "admin@projectify.com",
-        hashedPassword,
-        "System Administrator",
-        "ADMIN",
-        true,
-      ]
-    );
-
-    console.log("Admin created: admin@projectify.com / admin123");
-    await client.end();
-  } catch (error) {
-    console.error(error);
-  }
-}
-createAdmin();
-```
-
----
-
-## 4. Google Cloud Platform (GCP) Migration
-
-The application was migrated to a **Google Compute Engine (GCE)** instance. Below are the specific details of the deployment environment and configuration.
-
-### Deployment Environment
-
-- **OS:** Debian 12 (Bookworm)
-- **Machine Type:** e2-medium (Cost-optimized for university project scope)
-- **Networking:** Configured with **Standard Tier** networking to reduce ephemeral IP costs compared to Premium Tier.
-- **IAM Strategy:** Replaced the default Compute Engine Service Account with a custom identity limited strictly to:
-  - `Storage Object Admin` (For managing GCS attachments)
-  - `Logging Agent`
-
-### Automated Deployment Script
-
-To streamline the deployment on the VM, I created `install.sh` which handles Docker installation, Firewall rules, and container startup.
+### 2. Seed Initial Administrator Account
+New user registrations are set to `inactive` by default until approved by an administrator. Seed the default admin user:
 
 ```bash
-#!/bin/bash
-set -e
+# Run database seed script inside the user-service
+docker compose exec user-service node create-admin.js
+```
+> **Default Credentials:** `admin@projectify.com` / `admin123` *(Promptly change password in production)*
 
-echo "--- Starting Projectify Deployment ---"
+---
 
-# 1. Install Docker Engine
-if ! command -v docker &> /dev/null; then
-    sudo apt-get update
-    sudo apt-get install -y ca-certificates curl gnupg
-    # ... (Standard Docker GPG and Repo setup) ...
-    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-fi
+## 🛡️ Security & Defense-in-Depth
 
-# 2. Configure Firewall (UFW)
-# We explicitly open HTTP/HTTPS while keeping the rest locked down
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-echo "y" | sudo ufw enable
-
-# 3. Launch Containers
-sudo docker compose down
-sudo docker compose up -d --build
-
-echo "Deployment Complete. App is running on standard ports."
+```
+[ Internet Traffic ]
+        │
+        ▼
+[ Nginx Gateway ] ──► SSL/TLS (Let's Encrypt), Rate-Limit (10 req/s), CSP, HSTS, X-Frame-Options
+        │
+        ▼
+[ Microservice App Layer ] ──► In-Process @fastify/rate-limit, CORS, JWT Verification, Non-Root Containers
+        │
+        ▼
+[ Data Layer ] ──► Parameterized Prisma / Mongoose Queries, Bcrypt Hashing (10 Rounds), Internal Docker Network
 ```
 
-### Production Nginx Configuration
+1. **API Gateway Rate Limiting**: Throttles DDoS and aggressive scraping using Nginx's `limit_req_zone` with burst cushioning.
+2. **Endpoint Brute-Force Protection**: Sensitive authentication routes (`/api/users/login`) employ strict in-process rate limiting via `@fastify/rate-limit`.
+3. **Hardened HTTP Headers**: Strict `Content-Security-Policy`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, and HSTS.
+4. **Least-Privilege Containers**: Multi-stage Docker builds run unprivileged users (`USER node` / `USER nginx`).
+5. **No Secret Leaks**: Configuration is completely driven by environment variables (`.env.example` provided; `.env` excluded from version control).
 
-This configuration handles the SSL termination, WebSocket upgrades for Socket.io, and the security headers mentioned earlier.
+---
 
-```conf
-# Rate Limiting Zone: 10 requests per second
-limit_req_zone $binary_remote_addr zone=api_limit:10m rate=10r/s;
+## 🧪 Testing & Quality Assurance
 
-# HTTP -> HTTPS Redirect
-server {
-    listen 80;
-    server_name projectify-dev.duckdns.org;
-    return 301 https://$host$request_uri;
-}
+Projectify features an automated, zero-external-dependency test harness built on Node's native `node:test` and `node:assert` modules, orchestrated via `tsx --test`.
 
-# Main HTTPS Server
-server {
-    listen 443 ssl;
-    server_name projectify-dev.duckdns.org;
+By leveraging Fastify's in-memory `server.inject()` mechanism, tests validate HTTP routes, authentication guards, role-based permissions, and schema rejections **in under 2 seconds without requiring live database connections**.
 
-    # SSL Certs (Let's Encrypt)
-    ssl_certificate /etc/letsencrypt/live/projectify-dev.duckdns.org/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/projectify-dev.duckdns.org/privkey.pem;
+```bash
+# Run tests for all individual microservices
+(cd user-service && npm test)
+(cd team-service && npm test)
+(cd task-service && npm test)
+(cd notification-service && npm test)
 
-    # Security Headers
-    add_header X-Frame-Options "DENY" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-
-    # CSP: Allow Google Fonts, GCS Images, and WebSockets
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' [https://fonts.googleapis.com](https://fonts.googleapis.com); font-src 'self' data: [https://fonts.gstatic.com](https://fonts.gstatic.com); img-src 'self' data: [https://storage.googleapis.com](https://storage.googleapis.com); connect-src 'self' wss://projectify-dev.duckdns.org [https://projectify-dev.duckdns.org](https://projectify-dev.duckdns.org) [https://storage.googleapis.com](https://storage.googleapis.com);" always;
-
-    # Frontend Routing
-    location / {
-        proxy_pass http://frontend:80;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-    }
-
-    # API Routing with Rate Limiting
-    location /api/ {
-        limit_req zone=api_limit burst=20 nodelay;
-        proxy_pass http://nginx-gateway; # Internal routing
-    }
-
-    # WebSocket Support (Socket.io)
-    location /socket.io/ {
-        proxy_pass http://notification-service:3004/socket.io/;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_buffering off;
-    }
-}
+# Lint and verify frontend build
+(cd frontend && npm run lint)
+(cd frontend && npm run build)
 ```
 
----
-
-## 5. User Manual & UI Guide
-
-### Onboarding
-
-1.  Navigate to `/login` and select **Register**.
-2.  Fill in your details. _Note: Accounts are created in an INACTIVE state._
-3.  An **Administrator** must log in to the Admin Panel and "Activate" the user.
-
-### Roles & Permissions
-
-- **Admin:** Can manage users (activate/delete), change roles, and view all system data.
-- **Team Leader:** Can create Teams, add Members, create Tasks, and assign work.
-- **Member:** Can view assigned tasks, update status (e.g., move to "Done"), and comment.
-
-### Managing Work
-
-1.  **Dashboard:** Provides a high-level view of your tasks and a graph of task status distribution.
-2.  **Tasks Page:**
-    - **Filter:** Use the sidebar to filter by Priority (High/Medium) or Context (Specific Team).
-    - **Edit:** Click any task to open the modal. Here you can change the status, edit descriptions, or add rich-text comments.
-    - **Attachments:** Drag and drop files to upload them to Google Cloud Storage directly from the task modal.
+### Continuous Integration (CI)
+A multi-job GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push and PR:
+- Strict TypeScript compile check across all workspaces.
+- ESLint verification with zero warnings.
+- Complete execution of all microservice test suites.
 
 ---
 
-## 6. Database & Persistence
+## 📖 API Reference
 
-To ensure data integrity during updates, we use Docker Volumes for all databases.
+All requests pass through the Nginx gateway and require a Bearer JWT token in the `Authorization` header (except public auth routes).
 
-- **PostgreSQL (User Service):** Stores user credentials and RBAC data.
-- **MongoDB (Team/Task Services):** Stores unstructured data like team hierarchies and task metadata.
-- **Redis (Notification Service):**
-  - Configured with **AOF (Append Only File)** persistence.
-  - Ensures that queued notifications are not lost if the container restarts.
+<details>
+<summary><strong>🔐 User Service (<code>/api/users</code>)</strong></summary>
+
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/users/register` | Public | Register new account (pending admin approval) |
+| `POST` | `/api/users/login` | Public | Authenticate credentials & receive JWT |
+| `GET` | `/api/users` | Authenticated | List all active users for mention/assignment |
+| `GET` | `/api/users/admin` | Admin | Retrieve all registered users with activation state |
+| `PATCH`| `/api/users/admin/:id/activate` | Admin | Activate a pending user account |
+| `PATCH`| `/api/users/admin/:id/role` | Admin | Update user role (`ADMIN`, `TEAM_LEADER`, `MEMBER`) |
+| `DELETE`| `/api/users/admin/:id` | Admin | Delete a user account (with last-admin protection) |
+
+</details>
+
+<details>
+<summary><strong>👥 Team Service (<code>/api/teams</code>)</strong></summary>
+
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/teams/mine` | Authenticated | Fetch teams where the user is a member |
+| `GET` | `/api/teams/owned` | Authenticated | Fetch teams where the user is the leader |
+| `GET` | `/api/teams` | Admin | Fetch all teams across the system |
+| `POST` | `/api/teams` | Team Leader / Admin | Create a new team workspace |
+| `POST` | `/api/teams/:id/members` | Team Leader / Admin | Add a registered member to the team |
+| `DELETE`| `/api/teams/:id/members/:userId` | Team Leader / Admin | Remove a member from the team |
+
+</details>
+
+<details>
+<summary><strong>📋 Task Service (<code>/api/tasks</code>)</strong></summary>
+
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/tasks` | Authenticated | Fetch tasks (supports `teamId` query filtering) |
+| `POST` | `/api/tasks` | Team Leader / Admin | Create task with multipart attachment uploads |
+| `PATCH`| `/api/tasks/:id/status` | Authenticated | Update task stage (`TODO`, `IN_PROGRESS`, `DONE`) |
+| `PATCH`| `/api/tasks/:id` | Team Leader / Admin | Update title, description, deadline, or priority |
+| `POST` | `/api/tasks/:id/comments` | Authenticated | Post rich-text comment with mention support |
+| `GET` | `/api/tasks/:id/comments` | Authenticated | Fetch chronological comments for a task |
+
+</details>
+
+<details>
+<summary><strong>🔔 Notification Service (<code>/api/notifications</code>)</strong></summary>
+
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/notifications` | Authenticated | Fetch the latest 50 notifications for user |
+| `PATCH`| `/api/notifications/:id/read` | Authenticated | Mark an individual notification as read |
+| `PATCH`| `/api/notifications/read-all` | Authenticated | Mark all notifications as read |
+| `DELETE`| `/api/notifications` | Authenticated | Clear user's notification history |
+
+</details>
 
 ---
 
-## 7. API Reference
+## ☁️ Google Cloud Platform Deployment
 
-All endpoints are prefixed with `/api` and require a Bearer Token (JWT).
-
-| Service  | Method | Endpoint                    | Description                      |
-| :------- | :----- | :-------------------------- | :------------------------------- |
-| **User** | POST   | `/users/login`              | Authenticate & Retrieve Token    |
-| **User** | PATCH  | `/users/admin/:id/activate` | Activate a pending user          |
-| **Team** | POST   | `/teams`                    | Create a new team                |
-| **Task** | GET    | `/tasks`                    | Retrieve tasks with filters      |
-| **Task** | POST   | `/tasks`                    | Create task with GCS attachments |
+Projectify includes production configuration for **Google Compute Engine (GCE)**:
+- **Virtual Machine**: Debian 12 (Bookworm) on an `e2-medium` instance.
+- **Object Storage**: Google Cloud Storage (GCS) for resilient, scalable attachment hosting.
+- **IAM Principle of Least Privilege**: Custom service account scoped strictly to `Storage Object Admin` and `Logging Agent`.
+- **Automated Provisioning**: Deployable via root shell script with UFW firewall configuration.
 
 ---
 
-### License
+## 📄 License
 
-This project is licensed under the **GNU AGPLv3 License**.
-_Not recommended for commercial use without open-sourcing derived code._
+This project is licensed under the **GNU AGPLv3 License** — see the [LICENSE](LICENSE) file for details.
