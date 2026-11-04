@@ -47,10 +47,11 @@ Implemented a "Defense in Depth" strategy using Nginx as a reverse proxy. Key se
 
 ### Infrastructure Diagram
 
-- **Frontend:** React (Vite)
+- **Frontend:** React 19 (Vite)
 - **Gateway:** Nginx (Port 443/80)
-- **Backend:** Node.js Express Cluster
-- **Data Persistence:** PostgreSQL (Users), MongoDB (Tasks/Teams), Redis (Pub/Sub).
+- **Backend:** Node.js (TypeScript) + Fastify v5 Microservices
+- **Testing & CI:** Node.js native test runner (`node:test`) + GitHub Actions CI pipeline
+- **Data Persistence:** PostgreSQL (Users via Prisma 7), MongoDB (Tasks/Teams via Mongoose), Redis (Pub/Sub).
 
 ---
 
