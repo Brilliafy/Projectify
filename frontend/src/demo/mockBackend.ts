@@ -36,7 +36,7 @@ function setStorage<T>(key: string, val: T): void {
   }
 }
 
-const DEMO_SCHEMA_VERSION = 'v3_admin_notifications_and_image_attachments';
+const DEMO_SCHEMA_VERSION = 'v4_github_task_timeline_events';
 
 export function initDemoStorage(): void {
   const currentVersion = localStorage.getItem('projectify_demo_version');
@@ -372,6 +372,9 @@ export async function handleMockRequest(config: InternalAxiosRequestConfig): Pro
         text = d.text || '';
       }
 
+      const targetTask = tasks.find((t) => t._id === taskId);
+      const isReopening = targetTask && targetTask.status === 'DONE';
+
       const newComment: Comment = {
         _id: `comm-${Date.now()}`,
         taskId,
@@ -382,15 +385,49 @@ export async function handleMockRequest(config: InternalAxiosRequestConfig): Pro
         createdAt: new Date().toISOString(),
       };
 
+      const newCommentsList: Comment[] = [...(commentsMap[taskId] || []), newComment];
+
+      // GITHUB-STYLE REOPEN: If task was completed (DONE), commenting reopens it!
+      if (isReopening && targetTask) {
+        targetTask.status = 'IN_PROGRESS';
+        targetTask.updatedAt = new Date().toISOString();
+        const updatedTasks = tasks.map((t) => (t._id === taskId ? targetTask : t));
+        setStorage(STORAGE_KEYS.TASKS, updatedTasks);
+
+        const reopenEvent: Comment = {
+          _id: `comm-event-${Date.now() + 1}`,
+          taskId,
+          text: 'reopened this task',
+          creatorId: currentUser?.id ?? 1,
+          creatorName: currentUser?.fullName ?? 'Demo User',
+          creatorRole: currentUser?.role ?? 'MEMBER',
+          eventType: 'REOPENED',
+          createdAt: new Date(Date.now() + 20).toISOString(),
+        };
+        newCommentsList.push(reopenEvent);
+
+        const reopenNotif: Notification = {
+          _id: `notif-${Date.now() + 2}`,
+          userId: targetTask.creatorId,
+          type: 'TASK_UPDATED',
+          message: `Task "${targetTask.title}" was reopened by ${currentUser?.fullName ?? 'a teammate'}`,
+          relatedId: taskId,
+          read: false,
+          createdAt: new Date().toISOString(),
+        };
+        const notifications = getStorage<Notification[]>(STORAGE_KEYS.NOTIFICATIONS, INITIAL_NOTIFICATIONS);
+        setStorage(STORAGE_KEYS.NOTIFICATIONS, [reopenNotif, ...notifications]);
+        demoNotificationBus.dispatchEvent(new CustomEvent('notification', { detail: reopenNotif }));
+      }
+
       const updatedComments = {
         ...commentsMap,
-        [taskId]: [...(commentsMap[taskId] || []), newComment],
+        [taskId]: newCommentsList,
       };
       setStorage(STORAGE_KEYS.COMMENTS, updatedComments);
 
-      // Notification to task creator/assignees
-      const targetTask = tasks.find((t) => t._id === taskId);
-      if (targetTask) {
+      // Notification to task creator/assignees for comment
+      if (targetTask && !isReopening) {
         const notif: Notification = {
           _id: `notif-${Date.now()}`,
           userId: targetTask.creatorId,
@@ -413,8 +450,44 @@ export async function handleMockRequest(config: InternalAxiosRequestConfig): Pro
     if (method === 'patch' && statusMatch) {
       const taskId = statusMatch[1];
       const { status } = parsePayload<{ status: Task['status'] }>(config.data);
+      const previous = tasks.find((t) => t._id === taskId);
       const updated = tasks.map((t) => (t._id === taskId ? { ...t, status, updatedAt: new Date().toISOString() } : t));
       setStorage(STORAGE_KEYS.TASKS, updated);
+
+      // Record timeline events if marking COMPLETED or REOPENED manually
+      if (previous && previous.status !== 'DONE' && status === 'DONE') {
+        const completedEvent: Comment = {
+          _id: `comm-event-${Date.now()}`,
+          taskId,
+          text: 'marked this task as completed',
+          creatorId: currentUser?.id ?? 1,
+          creatorName: currentUser?.fullName ?? 'Demo User',
+          creatorRole: currentUser?.role ?? 'MEMBER',
+          eventType: 'COMPLETED',
+          createdAt: new Date().toISOString(),
+        };
+        const curComments = commentsMap[taskId] || [];
+        setStorage(STORAGE_KEYS.COMMENTS, {
+          ...commentsMap,
+          [taskId]: [...curComments, completedEvent],
+        });
+      } else if (previous && previous.status === 'DONE' && status !== 'DONE') {
+        const reopenEvent: Comment = {
+          _id: `comm-event-${Date.now()}`,
+          taskId,
+          text: 'reopened this task',
+          creatorId: currentUser?.id ?? 1,
+          creatorName: currentUser?.fullName ?? 'Demo User',
+          creatorRole: currentUser?.role ?? 'MEMBER',
+          eventType: 'REOPENED',
+          createdAt: new Date().toISOString(),
+        };
+        const curComments = commentsMap[taskId] || [];
+        setStorage(STORAGE_KEYS.COMMENTS, {
+          ...commentsMap,
+          [taskId]: [...curComments, reopenEvent],
+        });
+      }
 
       const target = updated.find((t) => t._id === taskId);
       if (target) {

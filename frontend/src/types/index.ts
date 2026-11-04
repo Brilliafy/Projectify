@@ -41,6 +41,7 @@ export interface Comment {
   creatorName: string;
   creatorRole: UserRole | string;
   attachments?: Attachment[];
+  eventType?: 'COMPLETED' | 'REOPENED';
   createdAt: string;
   updatedAt?: string;
 }

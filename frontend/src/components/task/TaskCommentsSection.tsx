@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Send, Trash2 } from 'lucide-react';
+import { Send, Trash2, CheckCircle2, RotateCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { Comment } from '../../types';
 import RichTextEditor from '../RichTextEditor';
@@ -10,6 +10,8 @@ interface TaskCommentsSectionProps {
   isLoading: boolean;
   onAddComment: (text: string, files: File[]) => void;
   isPosting: boolean;
+  taskStatus?: string;
+  taskUpdatedAt?: string;
 }
 
 const MAX_SIZE = 2 * 1024 * 1024; // 2MB
@@ -21,6 +23,8 @@ export const TaskCommentsSection: React.FC<TaskCommentsSectionProps> = ({
   isLoading,
   onAddComment,
   isPosting,
+  taskStatus,
+  taskUpdatedAt,
 }) => {
   const [commentText, setCommentText] = useState('');
   const [commentFiles, setCommentFiles] = useState<File[]>([]);
@@ -86,35 +90,111 @@ export const TaskCommentsSection: React.FC<TaskCommentsSectionProps> = ({
         )}
 
         {!isLoading &&
-          comments.map((comment) => (
-            <div key={comment._id} className="relative pl-6 group">
-              <div className="absolute -left-[29px] top-0 bg-white dark:bg-slate-900 border-2 border-base-200 dark:border-slate-800 rounded-full p-1 z-10 group-hover:border-primary transition-colors">
-                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-black text-base-content/70">
-                  {comment.creatorName ? comment.creatorName[0]?.toUpperCase() : 'U'}
+          comments.map((comment) => {
+            if (comment.eventType === 'REOPENED') {
+              return (
+                <div key={comment._id} className="relative pl-6 py-2 group animate-in fade-in duration-200">
+                  <div className="absolute -left-[27px] top-1/2 -translate-y-1/2 bg-white dark:bg-slate-900 border-2 border-amber-300 dark:border-amber-800 rounded-full p-1 z-10 shadow-xs">
+                    <div className="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center">
+                      <RotateCcw size={13} className="stroke-[2.5]" />
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 text-xs py-1">
+                    <span className="font-bold text-slate-800 dark:text-slate-200">
+                      {comment.creatorName}
+                    </span>
+                    <span className="text-slate-500 dark:text-slate-400">
+                      reopened this task with a new comment
+                    </span>
+                    <span className="badge badge-sm bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-none font-bold text-[10px] tracking-wider px-2">
+                      Uncompleted
+                    </span>
+                    <span className="text-slate-400 text-[11px] ml-auto">
+                      {new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                </div>
+              );
+            }
+
+            if (comment.eventType === 'COMPLETED') {
+              return (
+                <div key={comment._id} className="relative pl-6 py-2 group animate-in fade-in duration-200">
+                  <div className="absolute -left-[27px] top-1/2 -translate-y-1/2 bg-white dark:bg-slate-900 border-2 border-purple-300 dark:border-purple-800 rounded-full p-1 z-10 shadow-xs">
+                    <div className="w-6 h-6 rounded-full bg-purple-600 text-white flex items-center justify-center">
+                      <CheckCircle2 size={14} className="stroke-[2.5]" />
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 text-xs py-1">
+                    <span className="font-bold text-slate-800 dark:text-slate-200">
+                      {comment.creatorName}
+                    </span>
+                    <span className="text-slate-500 dark:text-slate-400">
+                      marked this task as completed
+                    </span>
+                    <span className="badge badge-sm bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-none font-bold text-[10px] tracking-wider px-2">
+                      Completed
+                    </span>
+                    <span className="text-slate-400 text-[11px] ml-auto">
+                      {new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <div key={comment._id} className="relative pl-6 group">
+                <div className="absolute -left-[29px] top-0 bg-white dark:bg-slate-900 border-2 border-base-200 dark:border-slate-800 rounded-full p-1 z-10 group-hover:border-primary transition-colors">
+                  <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-black text-base-content/70">
+                    {comment.creatorName ? comment.creatorName[0]?.toUpperCase() : 'U'}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-bold text-sm text-base-content">{comment.creatorName}</span>
+                    <span className="text-[10px] uppercase font-bold tracking-wider opacity-40">
+                      {new Date(comment.createdAt).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="bg-slate-50 dark:bg-slate-950/50 border border-base-200 dark:border-slate-800/50 rounded-2xl p-4 rounded-tl-none">
+                    <RichTextEditor content={comment.text} editable={false} />
+                    {comment.attachments && comment.attachments.length > 0 && (
+                      <div className="mt-4 pt-4 border-t border-base-200/50 flex flex-wrap gap-2">
+                        {comment.attachments.map((att, i) => (
+                          <FileAttachment key={att._id || i} file={att} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-sm text-base-content">{comment.creatorName}</span>
-                  <span className="text-[10px] uppercase font-bold tracking-wider opacity-40">
-                    {new Date(comment.createdAt).toLocaleString()}
-                  </span>
-                </div>
-                <div className="bg-slate-50 dark:bg-slate-950/50 border border-base-200 dark:border-slate-800/50 rounded-2xl p-4 rounded-tl-none">
-                  <RichTextEditor content={comment.text} editable={false} />
-                  {comment.attachments && comment.attachments.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-base-200/50 flex flex-wrap gap-2">
-                      {comment.attachments.map((att, i) => (
-                        <FileAttachment key={att._id || i} file={att} />
-                      ))}
-                    </div>
-                  )}
-                </div>
+            );
+          })}
+
+        {/* GitHub-style Task Completed node if task is currently DONE and last comment is not already a COMPLETED event */}
+        {taskStatus === 'DONE' && (!comments.length || comments[comments.length - 1].eventType !== 'COMPLETED') && (
+          <div className="relative pl-6 py-2 group animate-in fade-in duration-200">
+            <div className="absolute -left-[27px] top-1/2 -translate-y-1/2 bg-white dark:bg-slate-900 border-2 border-purple-300 dark:border-purple-800 rounded-full p-1 z-10 shadow-xs">
+              <div className="w-6 h-6 rounded-full bg-purple-600 text-white flex items-center justify-center">
+                <CheckCircle2 size={14} className="stroke-[2.5]" />
               </div>
             </div>
-          ))}
+            <div className="flex flex-wrap items-center gap-2 text-xs py-1">
+              <span className="font-bold text-slate-800 dark:text-slate-200">
+                Task marked as completed
+              </span>
+              <span className="badge badge-sm bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-none font-bold text-[10px] tracking-wider px-2">
+                Completed
+              </span>
+              <span className="text-slate-400 text-[11px] ml-auto">
+                {taskUpdatedAt ? new Date(taskUpdatedAt).toLocaleString() : 'Ready for release'}
+              </span>
+            </div>
+          </div>
+        )}
 
-        {!isLoading && comments.length === 0 && (
+        {!isLoading && comments.length === 0 && taskStatus !== 'DONE' && (
           <p className="text-sm opacity-40 italic pl-2">Start the conversation...</p>
         )}
       </div>

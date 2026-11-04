@@ -118,7 +118,13 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['comments', taskId] });
-      toast.success('Comment added');
+      qc.invalidateQueries({ queryKey: ['task', taskId] });
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+      if (task?.status === 'DONE') {
+        toast.success('Task reopened: In Progress', { icon: '🔄' });
+      } else {
+        toast.success('Comment added');
+      }
     },
     onError: () => toast.error('Failed to post comment'),
   });
@@ -192,6 +198,8 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                     commentMutation.mutate({ text, files })
                   }
                   isPosting={commentMutation.isPending}
+                  taskStatus={task.status}
+                  taskUpdatedAt={task.updatedAt}
                 />
               </div>
 
