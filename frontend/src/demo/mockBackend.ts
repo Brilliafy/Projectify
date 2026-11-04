@@ -89,6 +89,18 @@ function createError(message: string, status = 400) {
   return err;
 }
 
+function parsePayload<T = Record<string, unknown>>(data: unknown): T {
+  if (!data) return {} as T;
+  if (typeof data === 'string') {
+    try {
+      return JSON.parse(data) as T;
+    } catch {
+      return {} as T;
+    }
+  }
+  return data as T;
+}
+
 export async function handleMockRequest(config: InternalAxiosRequestConfig): Promise<AxiosResponse> {
   initDemoStorage();
 
@@ -111,7 +123,7 @@ export async function handleMockRequest(config: InternalAxiosRequestConfig): Pro
 
     // POST /login
     if (method === 'post' && sub === '/login') {
-      const { email } = (config.data || {}) as { email?: string; password?: string };
+      const { email } = parsePayload<{ email?: string; password?: string }>(config.data);
       const matched = users.find((u) => u.email.toLowerCase() === (email || '').toLowerCase());
       if (!matched) {
         throw createError('Invalid email or password', 401);
@@ -130,7 +142,7 @@ export async function handleMockRequest(config: InternalAxiosRequestConfig): Pro
 
     // POST /register
     if (method === 'post' && sub === '/register') {
-      const { email, fullName } = (config.data || {}) as { email: string; fullName: string };
+      const { email, fullName } = parsePayload<{ email: string; fullName: string }>(config.data);
       if (!email || !fullName) throw createError('Email and full name required', 400);
 
       const exists = users.some((u) => u.email.toLowerCase() === email.toLowerCase());
@@ -170,7 +182,7 @@ export async function handleMockRequest(config: InternalAxiosRequestConfig): Pro
     const roleMatch = sub.match(/^\/admin\/(\d+)\/role$/);
     if (method === 'patch' && roleMatch) {
       const targetId = Number(roleMatch[1]);
-      const { role } = (config.data || {}) as { role: User['role'] };
+      const { role } = parsePayload<{ role: User['role'] }>(config.data);
       const updated = users.map((u) => (u.id === targetId ? { ...u, role } : u));
       setStorage(STORAGE_KEYS.USERS, updated);
       const target = updated.find((u) => u.id === targetId);
@@ -218,10 +230,10 @@ export async function handleMockRequest(config: InternalAxiosRequestConfig): Pro
 
     // POST / (create team)
     if (method === 'post' && (sub === '' || sub === '/')) {
-      const body = (config.data || {}) as { name: string; description?: string };
+      const body = parsePayload<{ name: string; description?: string }>(config.data);
       const newTeam: Team = {
         _id: `team-${Date.now()}`,
-        name: body.name,
+        name: body.name || 'New Team',
         description: body.description,
         leaderId: currentUser?.id ?? 1,
         members: [currentUser?.id ?? 1],
@@ -235,7 +247,7 @@ export async function handleMockRequest(config: InternalAxiosRequestConfig): Pro
     const addMemberMatch = sub.match(/^\/([^/]+)\/members$/);
     if (method === 'post' && addMemberMatch) {
       const teamId = addMemberMatch[1];
-      const { userIdToAdd } = (config.data || {}) as { userIdToAdd: number };
+      const { userIdToAdd } = parsePayload<{ userIdToAdd: number }>(config.data);
       const updated = teams.map((t) => {
         if (t._id === teamId && !t.members.includes(userIdToAdd)) {
           return { ...t, members: [...t.members, userIdToAdd] };
@@ -280,7 +292,7 @@ export async function handleMockRequest(config: InternalAxiosRequestConfig): Pro
     const patchTeamMatch = sub.match(/^\/([^/]+)$/);
     if (method === 'patch' && patchTeamMatch && !sub.includes('/members')) {
       const teamId = patchTeamMatch[1];
-      const body = (config.data || {}) as Partial<Team>;
+      const body = parsePayload<Partial<Team>>(config.data);
       const updated = teams.map((t) => (t._id === teamId ? { ...t, ...body } : t));
       setStorage(STORAGE_KEYS.TEAMS, updated);
       return createSuccessResponse(updated.find((t) => t._id === teamId), config);
@@ -329,8 +341,9 @@ export async function handleMockRequest(config: InternalAxiosRequestConfig): Pro
       let text = '';
       if (config.data instanceof FormData) {
         text = String(config.data.get('text') || '');
-      } else if (config.data && typeof config.data === 'object') {
-        text = (config.data as { text?: string }).text || '';
+      } else {
+        const d = parsePayload<{ text?: string }>(config.data);
+        text = d.text || '';
       }
 
       const newComment: Comment = {
@@ -373,7 +386,7 @@ export async function handleMockRequest(config: InternalAxiosRequestConfig): Pro
     const statusMatch = sub.match(/^\/([^/]+)\/status$/);
     if (method === 'patch' && statusMatch) {
       const taskId = statusMatch[1];
-      const { status } = (config.data || {}) as { status: Task['status'] };
+      const { status } = parsePayload<{ status: Task['status'] }>(config.data);
       const updated = tasks.map((t) => (t._id === taskId ? { ...t, status, updatedAt: new Date().toISOString() } : t));
       setStorage(STORAGE_KEYS.TASKS, updated);
 
@@ -400,7 +413,7 @@ export async function handleMockRequest(config: InternalAxiosRequestConfig): Pro
     const taskByIdMatch = sub.match(/^\/([^/]+)$/);
     if (method === 'patch' && taskByIdMatch && !sub.includes('/status') && !sub.includes('/comments')) {
       const taskId = taskByIdMatch[1];
-      const body = (config.data || {}) as Partial<Task>;
+      const body = parsePayload<Partial<Task>>(config.data);
       const updated = tasks.map((t) => (t._id === taskId ? { ...t, ...body, updatedAt: new Date().toISOString() } : t));
       setStorage(STORAGE_KEYS.TASKS, updated);
       return createSuccessResponse(updated.find((t) => t._id === taskId), config);
@@ -445,8 +458,8 @@ export async function handleMockRequest(config: InternalAxiosRequestConfig): Pro
             assigneeIds = [];
           }
         }
-      } else if (config.data && typeof config.data === 'object') {
-        const d = config.data as Record<string, unknown>;
+      } else {
+        const d = parsePayload<Record<string, unknown>>(config.data);
         title = String(d.title || '');
         description = String(d.description || '');
         priority = (d.priority as Task['priority']) || 'MEDIUM';

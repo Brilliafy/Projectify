@@ -238,3 +238,15 @@ button:focus-visible {
 .prose u {
   text-decoration: underline !important;
 }
+
+/* Hide any Netlify injected badge / HUD iframe */
+#nl-badge-frame,
+#nl-hud-frame,
+iframe[title="Powered by Netlify"],
+iframe[title="Netlify"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+

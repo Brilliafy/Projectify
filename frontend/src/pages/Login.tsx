@@ -37,8 +37,12 @@ export default function Login() {
       await login({ email, password: 'password123' });
       toast.success('Welcome to Projectify Demo!');
       navigate('/dashboard');
-    } catch {
-      toast.error('Quick login failed');
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        toast.error(err.response?.data?.error || 'Quick login failed');
+      } else {
+        toast.error('Quick login failed');
+      }
     }
   };
 
