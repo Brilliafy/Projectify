@@ -14,7 +14,6 @@ const TaskDetail = lazy(() => import('./pages/TaskDetail'));
 const AdminPanel = lazy(() => import('./pages/AdminPanel'));
 const TeamsPage = lazy(() => import('./pages/TeamsPage'));
 const TasksPage = lazy(() => import('./pages/TasksPage'));
-const LandingPage = lazy(() => import('./pages/LandingPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 const queryClient = new QueryClient({
@@ -50,7 +49,7 @@ function AppRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} />
         <Route
           path="/dashboard"
           element={
@@ -116,7 +115,7 @@ export default function App() {
         <NotificationProvider>
           <BrowserRouter>
             <AppRoutes />
-            <Toaster position="bottom-right" />
+            <Toaster position="top-right" toastOptions={{ duration: 4000, style: { zIndex: 99999 } }} />
           </BrowserRouter>
         </NotificationProvider>
       </AuthProvider>
