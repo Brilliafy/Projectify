@@ -87,11 +87,22 @@ export default function Dashboard() {
     markAsRead(notif._id);
     setIsNotificationsOpen(false);
     
-    // Navigate based on type
-    if (notif.relatedId && (notif.type === 'TASK_ASSIGNED' || notif.type === 'TASK_UPDATED' || notif.type === 'COMMENT_ADDED')) {
-        navigate(`/task/${notif.relatedId}`);
+    // If it's a pending user or account approval notification -> navigate directly to /admin
+    if (
+      notif.message.toLowerCase().includes('pending') ||
+      notif.message.toLowerCase().includes('approval') ||
+      notif.message.toLowerCase().includes('account') ||
+      notif.relatedId === '6'
+    ) {
+      navigate('/admin');
+      return;
+    }
+
+    // Navigate based on task or team type
+    if (notif.relatedId && notif.relatedId.startsWith('task-')) {
+      navigate(`/task/${notif.relatedId}`);
     } else if (notif.type === 'TEAM_ADDED') {
-        navigate('/teams');
+      navigate('/teams');
     }
   };
 
