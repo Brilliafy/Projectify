@@ -158,6 +158,7 @@ export default function TaskDetail() {
             title={task.title}
             status={task.status}
             priority={task.priority}
+            deadline={task.deadline}
             isAuthorized={isAuthorizedToEdit}
             onUpdateTitle={(title) => updateTaskMutation.mutate({ title })}
             onUpdatePriority={(priority) => updateTaskMutation.mutate({ priority })}

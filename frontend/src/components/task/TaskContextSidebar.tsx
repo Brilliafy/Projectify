@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, Edit2, X, Check } from 'lucide-react';
+import { Calendar, Clock, Edit2, X, Check, AlertCircle } from 'lucide-react';
 import clsx from 'clsx';
 import type { TaskStatus, User } from '../../types';
 import { getStatusInfo } from './taskHelpers';
@@ -30,6 +30,12 @@ export const TaskContextSidebar: React.FC<TaskContextSidebarProps> = ({
   const [isStatusOpen, setIsStatusOpen] = useState(false);
   const statusInfo = getStatusInfo(status);
   const StatusIcon = statusInfo.icon;
+
+  const isDone = status === 'DONE';
+  const deadlineDate = deadline ? new Date(deadline) : null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const isOverdue = !isDone && !!deadlineDate && deadlineDate < today;
 
   return (
     <div className="w-full md:w-96 bg-slate-50/50 dark:bg-slate-900/50 border-l border-base-200 dark:border-slate-800 p-6 md:p-8 space-y-8 h-auto md:h-full overflow-y-auto">
@@ -118,11 +124,34 @@ export const TaskContextSidebar: React.FC<TaskContextSidebarProps> = ({
                 <span className="text-xs font-bold truncate">{creatorName}</span>
               </div>
             </div>
-            <div className="p-3 bg-white dark:bg-slate-900 rounded-2xl border border-base-200 dark:border-slate-800 shadow-sm">
-              <label className="text-[9px] uppercase font-bold tracking-wider opacity-40 mb-1 block">Due Date</label>
+            <div className={clsx(
+              "p-3 rounded-2xl border shadow-sm transition-all",
+              isOverdue
+                ? "bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400"
+                : "bg-white dark:bg-slate-900 border-base-200 dark:border-slate-800"
+            )}>
+              <div className="flex items-center justify-between mb-1">
+                <label className={clsx(
+                  "text-[9px] uppercase font-bold tracking-wider block",
+                  isOverdue ? "text-rose-600 dark:text-rose-400 font-black opacity-100" : "opacity-40"
+                )}>
+                  Due Date
+                </label>
+                {isOverdue && (
+                  <span className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-rose-500 text-white leading-none">
+                    Overdue
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-2 truncate text-xs font-bold">
-                <Calendar size={12} className="opacity-50" />
-                {deadline ? new Date(deadline).toLocaleDateString() : 'None'}
+                {isOverdue ? (
+                  <AlertCircle size={13} className="text-rose-500 shrink-0" />
+                ) : (
+                  <Calendar size={12} className="opacity-50 shrink-0" />
+                )}
+                <span className={isOverdue ? "font-extrabold text-rose-600 dark:text-rose-400" : ""}>
+                  {deadline ? new Date(deadline).toLocaleDateString() : 'None'}
+                </span>
               </div>
             </div>
           </div>

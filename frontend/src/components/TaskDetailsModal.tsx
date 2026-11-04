@@ -164,6 +164,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
               title={task.title}
               status={task.status}
               priority={task.priority}
+              deadline={task.deadline}
               isAuthorized={isAuthorizedToEdit}
               onUpdateTitle={(title) => updateTaskMutation.mutate({ title })}
               onUpdatePriority={(priority) =>

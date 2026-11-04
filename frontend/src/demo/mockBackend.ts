@@ -36,7 +36,7 @@ function setStorage<T>(key: string, val: T): void {
   }
 }
 
-const DEMO_SCHEMA_VERSION = 'v4_github_task_timeline_events';
+const DEMO_SCHEMA_VERSION = 'v5_overdue_task_samples';
 
 export function initDemoStorage(): void {
   const currentVersion = localStorage.getItem('projectify_demo_version');

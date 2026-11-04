@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Check, Edit2, Trash2, X } from 'lucide-react';
+import { ArrowLeft, Check, Edit2, Trash2, X, AlertCircle } from 'lucide-react';
 import clsx from 'clsx';
 import type { TaskPriority, TaskStatus } from '../../types';
 import { getPriorityInfo, getStatusInfo } from './taskHelpers';
@@ -9,6 +9,7 @@ interface TaskHeaderProps {
   title: string;
   status: TaskStatus;
   priority: TaskPriority;
+  deadline?: string | null;
   isAuthorized: boolean;
   onUpdateTitle: (title: string) => void;
   onUpdatePriority: (priority: TaskPriority) => void;
@@ -25,6 +26,7 @@ export const TaskHeader: React.FC<TaskHeaderProps> = ({
   title,
   status,
   priority,
+  deadline,
   isAuthorized,
   onUpdateTitle,
   onUpdatePriority,
@@ -40,6 +42,12 @@ export const TaskHeader: React.FC<TaskHeaderProps> = ({
   const statusInfo = getStatusInfo(status);
   const StatusIcon = statusInfo.icon;
   const priorityInfo = getPriorityInfo(priority);
+
+  const isDone = status === 'DONE';
+  const deadlineDate = deadline ? new Date(deadline) : null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const isOverdue = !isDone && !!deadlineDate && deadlineDate < today;
 
   const handleSaveTitle = () => {
     if (tempTitle.trim() && tempTitle !== title) {
@@ -143,6 +151,13 @@ export const TaskHeader: React.FC<TaskHeaderProps> = ({
               </div>
             )}
           </div>
+
+          {isOverdue && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30 text-[9px] font-black uppercase tracking-widest">
+              <AlertCircle size={13} className="text-rose-500 shrink-0" />
+              <span>Overdue</span>
+            </div>
+          )}
         </div>
 
         {/* Title row */}

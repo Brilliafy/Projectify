@@ -172,6 +172,43 @@ export const INITIAL_TASKS: Task[] = [
     createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
     updatedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
   },
+  {
+    _id: 'task-107',
+    title: 'Hotfix: Redis PubSub Connection Leak on WebSocket Disconnect',
+    description: '<p>Investigate memory growth in staging API gateway pods. Disconnected WebSocket client channels are remaining in Redis subscription sets, causing leaked listeners and thread pool exhaustion.</p><ul><li>Reproduce with simulated rapid reconnect script</li><li>Verify heartbeat timeout purge handler</li><li>Apply backpressure threshold config</li></ul>',
+    status: 'IN_PROGRESS',
+    priority: 'HIGH',
+    deadline: new Date(Date.now() - 3 * 86400000).toISOString(), // 3 days overdue
+    teamId: 'team-infra-101',
+    creatorId: 2,
+    assigneeIds: [2, 3],
+    attachments: [
+      {
+        fileName: 'redis-memory-profile.png',
+        originalName: 'redis-memory-profile.png',
+        mimeType: 'image/png',
+        size: 458920,
+        gcsFileName: 'mock-redis-profile.png',
+        uploadedAt: new Date(Date.now() - 4 * 86400000).toISOString(),
+      },
+    ],
+    createdAt: new Date(Date.now() - 6 * 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 1 * 86400000).toISOString(),
+  },
+  {
+    _id: 'task-108',
+    title: 'Rotate Staging Database Credentials & Vault Tokens',
+    description: '<p>Quarterly security audit rotation of HashiCorp Vault lease tokens and PostgreSQL staging service credentials. <strong>Overdue by 1 day</strong> &mdash; requires coordinated restart of background workers.</p>',
+    status: 'TODO',
+    priority: 'MEDIUM',
+    deadline: new Date(Date.now() - 1 * 86400000).toISOString(), // 1 day overdue
+    teamId: 'team-infra-101',
+    creatorId: 1,
+    assigneeIds: [3],
+    attachments: [],
+    createdAt: new Date(Date.now() - 4 * 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+  },
 ];
 
 export const INITIAL_COMMENTS: Record<string, Comment[]> = {
@@ -355,6 +392,49 @@ export const INITIAL_COMMENTS: Record<string, Comment[]> = {
       createdAt: new Date(Date.now() - 1 * 86400000).toISOString(),
     },
   ],
+  'task-107': [
+    {
+      _id: 'comm-107-1',
+      taskId: 'task-107',
+      text: '<p>I captured the heap dump during the staging spike. Notice how the subscription listeners weren&apos;t unregistered when client sockets dropped uncleanly during Nginx keepalive timeout:</p><p><img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80" alt="Redis Memory Profile" style="border-radius:12px;margin-top:8px;max-height:280px;width:100%;object-fit:cover;" /></p>',
+      creatorId: 3,
+      creatorName: 'Sarah Chen (Senior SRE)',
+      creatorRole: 'MEMBER',
+      attachments: [
+        {
+          _id: 'att-107-1',
+          originalName: 'redis-memory-profile.png',
+          fileName: 'redis-memory-profile.png',
+          mimeType: 'image/png',
+          size: 458920,
+          gcsFileName: 'mock-redis-profile.png',
+          url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80',
+          uploadedAt: new Date(Date.now() - 4 * 86400000).toISOString(),
+        },
+      ],
+      createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+    },
+    {
+      _id: 'comm-107-2',
+      taskId: 'task-107',
+      text: '<p>Good catch Sarah. The deadline was 3 days ago so this is flagged as <strong>Overdue</strong> on our dashboard. I am testing the cleanup listener right now.</p>',
+      creatorId: 2,
+      creatorName: 'Marcus Vance (Platform Lead)',
+      creatorRole: 'TEAM_LEADER',
+      createdAt: new Date(Date.now() - 1 * 86400000).toISOString(),
+    },
+  ],
+  'task-108': [
+    {
+      _id: 'comm-108-1',
+      taskId: 'task-108',
+      text: '<p>Reminder @sarah: this token rotation was due yesterday. Please make sure staging worker pods are recycled with the new Vault lease credentials before end of day today.</p>',
+      creatorId: 1,
+      creatorName: 'Elena Rostova (System Admin)',
+      creatorRole: 'ADMIN',
+      createdAt: new Date(Date.now() - 18 * 3600000).toISOString(),
+    },
+  ],
 };
 
 // ============================================================================
@@ -472,6 +552,8 @@ export const NOTIFICATION_POOL: Array<{
   { type: 'COMMENT_ADDED', message: 'Marcus Vance posted: "Production deployment scheduled for 22:00 UTC"', relatedId: 'task-103' },
   { type: 'TASK_UPDATED', message: 'Fastify v5 route schema validation benchmarked at 42,000 req/sec', relatedId: 'task-101' },
   { type: 'TASK_UPDATED', message: 'Netlify production demo deploy live at projectify-demo.netlify.app', relatedId: 'task-105' },
+  { type: 'TASK_UPDATED', message: 'Overdue alert: "Hotfix: Redis PubSub Connection Leak" deadline was 3 days ago', relatedId: 'task-107' },
+  { type: 'TASK_UPDATED', message: 'Overdue alert: "Rotate Staging Database Credentials & Vault Tokens" is overdue', relatedId: 'task-108' },
 ];
 
 // Helper to seed 2-3 deterministic demo notifications for a specific user
