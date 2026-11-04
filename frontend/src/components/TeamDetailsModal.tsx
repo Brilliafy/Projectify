@@ -4,8 +4,9 @@ import { teamApi, userApi } from '../api/axios';
 import { X, Trash2, UserPlus, Calendar, Shield, Search, Users, Target, Layout, Trash } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import clsx from 'clsx';
+import type { Team, User } from '../types';
 
 interface TeamDetailsModalProps {
   teamId: string;
@@ -19,14 +20,14 @@ export default function TeamDetailsModal({ teamId, isOpen, onClose }: TeamDetail
   const [searchTerm, setSearchTerm] = useState('');
 
   // Fetch team details
-  const { data: team, isLoading } = useQuery({
+  const { data: team, isLoading } = useQuery<Team>({
     queryKey: ['team', teamId],
     queryFn: async () => (await teamApi.get(`/${teamId}`)).data,
     enabled: isOpen,
   });
 
   // Fetch all users
-  const { data: allUsers } = useQuery({
+  const { data: allUsers } = useQuery<User[]>({
     queryKey: ['users'],
     queryFn: async () => (await userApi.get('')).data,
     enabled: isOpen,
@@ -59,7 +60,8 @@ export default function TeamDetailsModal({ teamId, isOpen, onClose }: TeamDetail
   });
 
   const updateTeamMutation = useMutation({
-    mutationFn: async (data: any) => teamApi.patch(`/${teamId}`, data),
+    mutationFn: async (data: { name?: string; description?: string }) =>
+      teamApi.patch(`/${teamId}`, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['teams'] });
       qc.invalidateQueries({ queryKey: ['team', teamId] });
@@ -84,7 +86,7 @@ export default function TeamDetailsModal({ teamId, isOpen, onClose }: TeamDetail
   useEffect(() => {
     if (team) {
       setValue('name', team.name);
-      setValue('description', team.description);
+      setValue('description', team.description || '');
     }
   }, [team, setValue]);
 
@@ -228,14 +230,14 @@ export default function TeamDetailsModal({ teamId, isOpen, onClose }: TeamDetail
                   {searchTerm && (
                     <div className="max-h-48 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-2 shadow-xl animate-in fade-in slide-in-from-top-2">
                       {allUsers
-                        .filter(
-                          (u: any) =>
+                        ?.filter(
+                          (u: User) =>
                             !team.members.includes(u.id) &&
                             (u.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || 
                              u.email.toLowerCase().includes(searchTerm.toLowerCase())) &&
                             u.role !== 'ADMIN'
                         )
-                        .map((u: any) => (
+                        .map((u: User) => (
                           <div
                             key={u.id}
                             className="flex justify-between items-center p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer group"
@@ -253,7 +255,7 @@ export default function TeamDetailsModal({ teamId, isOpen, onClose }: TeamDetail
                             <UserPlus size={14} className="opacity-0 group-hover:opacity-100 text-primary transition-opacity" />
                           </div>
                         ))}
-                      {allUsers?.filter((u: any) => !team.members.includes(u.id) && u.fullName.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
+                      {allUsers?.filter((u: User) => !team.members.includes(u.id) && u.fullName.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
                         <div className="p-4 text-center text-[10px] font-black uppercase opacity-30">No matching users</div>
                       )}
                     </div>
@@ -269,7 +271,7 @@ export default function TeamDetailsModal({ teamId, isOpen, onClose }: TeamDetail
                   </div>
                   <div className="space-y-3 overflow-y-auto pr-2 no-scrollbar">
                     {team.members.map((mId: number) => {
-                      const member = allUsers?.find((u: any) => u.id === mId);
+                      const member = allUsers?.find((u: User) => u.id === mId);
                       if (!member) return null;
                       const isMemberLeader = member.id === team.leaderId;
                       return (

@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "tsx --test \"src/**/*.test.ts\"",
+    "build": "prisma generate && tsc",
+    "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts"
   },
   "keywords": [],
@@ -14,6 +16,7 @@
   "dependencies": {
     "@fastify/cors": "^11.2.0",
     "@fastify/jwt": "^10.0.0",
+    "@fastify/rate-limit": "^11.2.2",
     "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.4.0",
     "bcryptjs": "^3.0.3",

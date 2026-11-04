@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { teamApi, userApi } from '../api/axios';
 import { X, Calendar, Users } from 'lucide-react';
 import clsx from 'clsx';
+import type { Team, User } from '../types';
 
 interface TeamDetailsModalReadOnlyProps {
   teamId: string;
@@ -11,20 +12,20 @@ interface TeamDetailsModalReadOnlyProps {
 
 export default function TeamDetailsModalReadOnly({ teamId, isOpen, onClose }: TeamDetailsModalReadOnlyProps) {
   // Fetch team details
-  const { data: team, isLoading } = useQuery({
+  const { data: team, isLoading } = useQuery<Team>({
     queryKey: ['team', teamId],
     queryFn: async () => (await teamApi.get(`/${teamId}`)).data,
     enabled: isOpen,
   });
 
   // Fetch all users to resolve names
-  const { data: allUsers } = useQuery({
+  const { data: allUsers } = useQuery<User[]>({
     queryKey: ['users'],
     queryFn: async () => (await userApi.get('')).data,
     enabled: isOpen,
   });
 
-  const getMemberDetails = (id: number) => allUsers?.find((u: any) => u.id === id);
+  const getMemberDetails = (id: number) => allUsers?.find((u: User) => u.id === id);
 
   if (!isOpen) return null;
   if (isLoading || !team) return null;

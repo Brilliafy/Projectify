@@ -1,27 +1,32 @@
 import { useForm } from 'react-hook-form';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/useAuth';
+import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useState } from 'react';
+import axios from 'axios';
+import type { LoginCredentials } from '../types';
 
 export default function Login() {
-  const { register, handleSubmit } = useForm();
+  const { register, handleSubmit } = useForm<LoginCredentials>();
   const { login } = useAuth();
   const navigate = useNavigate();
   const [focused, setFocused] = useState<Record<string, boolean>>({});
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: LoginCredentials) => {
     try {
       await login(data);
       toast.success('Welcome back');
-      navigate('/');
-    } catch (err: any) {
-      const status = err?.response?.status;
-
-      if (status === 403) {
-        toast.error('Your account is awaiting admin approval');
+      navigate('/dashboard');
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        const status = err.response?.status;
+        if (status === 403) {
+          toast.error('Your account is awaiting admin approval');
+        } else {
+          toast.error('Invalid email or password');
+        }
       } else {
-        toast.error('Invalid email or password');
+        toast.error('An unexpected error occurred');
       }
     }
   };
@@ -44,7 +49,7 @@ export default function Login() {
           <div className="relative">
             <input
               type="email"
-              {...register('email')}
+              {...register('email', { required: true })}
               placeholder=" "
               onFocus={() => handleFocus('email')}
               onBlur={(e) => handleBlur('email', e.target.value)}
@@ -62,7 +67,7 @@ export default function Login() {
           <div className="relative">
             <input
               type="password"
-              {...register('password')}
+              {...register('password', { required: true })}
               placeholder=" "
               onFocus={() => handleFocus('password')}
               onBlur={(e) => handleBlur('password', e.target.value)}
@@ -87,9 +92,9 @@ export default function Login() {
 
         <p className="mt-6 text-center text-base-content/60 text-sm">
           No account?{' '}
-          <a href="/register" className="text-primary font-semibold hover:underline">
+          <Link to="/register" className="text-primary font-semibold hover:underline">
             Register
-          </a>
+          </Link>
         </p>
       </div>
     </div>

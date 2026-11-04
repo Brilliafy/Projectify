@@ -1,22 +1,28 @@
 import { useForm } from 'react-hook-form';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/useAuth';
+import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useState } from 'react';
+import axios from 'axios';
+import type { RegisterData } from '../types';
 
 export default function Register() {
   const { register: registerUser } = useAuth();
-  const { register, handleSubmit } = useForm();
+  const { register, handleSubmit } = useForm<RegisterData>();
   const navigate = useNavigate();
   const [focused, setFocused] = useState<Record<string, boolean>>({});
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: RegisterData) => {
     try {
       await registerUser(data);
-      toast.success('Registered successfully. Awaiting admin approval.');
+      toast.success('Registered successfully! Awaiting admin approval before login.');
       navigate('/login');
-    } catch {
-      toast.error('Email already exists');
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response?.data?.error) {
+        toast.error(err.response.data.error);
+      } else {
+        toast.error('Registration failed. Email may already exist.');
+      }
     }
   };
 
@@ -38,7 +44,7 @@ export default function Register() {
           <div className="relative">
             <input
               type="text"
-              {...register('fullName')}
+              {...register('fullName', { required: true })}
               placeholder=" "
               onFocus={() => handleFocus('fullName')}
               onBlur={(e) => handleBlur('fullName', e.target.value)}
@@ -56,7 +62,7 @@ export default function Register() {
           <div className="relative">
             <input
               type="email"
-              {...register('email')}
+              {...register('email', { required: true })}
               placeholder=" "
               onFocus={() => handleFocus('email')}
               onBlur={(e) => handleBlur('email', e.target.value)}
@@ -74,7 +80,7 @@ export default function Register() {
           <div className="relative">
             <input
               type="password"
-              {...register('password')}
+              {...register('password', { required: true, minLength: 6 })}
               placeholder=" "
               onFocus={() => handleFocus('password')}
               onBlur={(e) => handleBlur('password', e.target.value)}
@@ -85,7 +91,7 @@ export default function Register() {
                 ${focused.password ? '-translate-y-5 text-xs text-primary font-semibold' : 'text-base-content/40'}
               `}
             >
-              Password
+              Password (min 6 chars)
             </label>
           </div>
 
@@ -99,9 +105,9 @@ export default function Register() {
 
         <p className="mt-6 text-center text-base-content/60 text-sm">
           Already have an account?{' '}
-          <a href="/login" className="text-primary font-semibold hover:underline">
+          <Link to="/login" className="text-primary font-semibold hover:underline">
             Login
-          </a>
+          </Link>
         </p>
       </div>
     </div>

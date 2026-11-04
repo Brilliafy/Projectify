@@ -3,8 +3,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { teamApi } from '../api/axios';
 import { X, Loader2, Users, Target, Layout, ShieldAlert } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import clsx from 'clsx';
+import axios from 'axios';
+import type { CreateTeamFormData } from '../types';
 
 interface CreateTeamModalProps {
   isOpen: boolean;
@@ -17,18 +19,22 @@ export default function CreateTeamModal({ isOpen, onClose }: CreateTeamModalProp
 
   const isAllowed = user?.role === 'TEAM_LEADER' || user?.role === 'ADMIN';
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm();
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateTeamFormData>();
 
   const createMutation = useMutation({
-    mutationFn: async (data: any) => teamApi.post('', data),
+    mutationFn: async (data: CreateTeamFormData) => teamApi.post('', data),
     onSuccess: () => {
       toast.success('Team created successfully');
       qc.invalidateQueries({ queryKey: ['teams'] });
       reset();
       onClose();
     },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.error || 'Failed to create team');
+    onError: (err: unknown) => {
+      if (axios.isAxiosError(err) && err.response?.data?.error) {
+        toast.error(err.response.data.error);
+      } else {
+        toast.error('Failed to create team');
+      }
     },
   });
 

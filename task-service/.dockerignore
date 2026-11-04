@@ -1,0 +1,10 @@
+node_modules
+dist
+.env
+.env.*
+*.log
+.vscode
+.git
+uploads
+*service-account*.json
+projectify-*.json

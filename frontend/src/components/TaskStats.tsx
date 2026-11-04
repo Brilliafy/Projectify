@@ -1,8 +1,9 @@
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { LayoutDashboard, CheckCircle2, CircleDot, Clock } from 'lucide-react';
 import clsx from 'clsx';
+import type { Task } from '../types';
 
-export default function TaskStats({ tasks }: { tasks: any[] }) {
+export default function TaskStats({ tasks }: { tasks: Task[] }) {
   if (!tasks || tasks.length === 0) return null;
 
   const stats = [

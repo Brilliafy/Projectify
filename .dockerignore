@@ -1,0 +1,16 @@
+node_modules
+dist
+dist-ssr
+build
+.git
+.gitignore
+.env
+.env.*
+*.log
+coverage
+.vscode
+.idea
+uploads
+*service-account*.json
+projectify-*.json
+README.md

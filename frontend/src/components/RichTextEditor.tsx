@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
+import type { EditorView } from '@tiptap/pm/view';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import { Bold, Italic, Underline as UnderlineIcon, List, ListOrdered, Paperclip, Link as LinkIcon, Check, X, Unlink } from 'lucide-react';
@@ -21,7 +22,7 @@ export default function RichTextEditor({
   onAttach,
   minHeight = "100px"
 }: RichTextEditorProps) {
-  const handleDoubleSpace = (view: any, event: any) => {
+  const handleDoubleSpace = (view: EditorView, event: KeyboardEvent) => {
     if (event.key === ' ') {
       const { state, dispatch } = view;
       const { selection, schema } = state;

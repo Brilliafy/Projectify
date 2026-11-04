@@ -1,17 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
 import { taskApi, teamApi, userApi } from '../api/axios';
 import { CircleDot, CheckCircle2, Clock, Plus, Users, Shield, LayoutGrid, AlertCircle, ChevronDown, Bell, Check, Trash2 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useNotifications } from '../context/NotificationContext';
+import { useAuth } from '../context/useAuth';
+import { useNotification } from '../context/useNotification';
 import { useState, useMemo } from 'react';
 import CreateTaskModal from '../components/CreateTaskModal';
 import TaskStats from '../components/TaskStats';
 import { useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
+import type { Team, Task, User, Notification } from '../types';
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotifications } = useNotifications();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotifications } = useNotification();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
@@ -19,21 +20,22 @@ export default function Dashboard() {
   const [selectedTeamId, setSelectedTeamId] = useState<string>('ALL');
 
   // 1. Fetch my teams
-  const { data: teams } = useQuery({
+  const { data: teams } = useQuery<Team[]>({
     queryKey: ['teams'],
     queryFn: async () => (await teamApi.get('/mine')).data
   });
 
   const activeTeam = useMemo(() => 
-    selectedTeamId === 'ALL' ? null : teams?.find((t: any) => t._id === selectedTeamId),
+    selectedTeamId === 'ALL' ? null : teams?.find((t: Team) => t._id === selectedTeamId),
     [teams, selectedTeamId]
   );
   
   // 2. Fetch tasks
-  const { data: allTasks, isLoading } = useQuery({
-    queryKey: ['tasks', 'dashboard', teams?.map((t: any) => t._id)],
+  const { data: allTasks, isLoading } = useQuery<Task[]>({
+    queryKey: ['tasks', 'dashboard', teams?.map((t: Team) => t._id)],
     queryFn: async () => {
-        const promises = teams.map((t: any) => taskApi.get('', { params: { teamId: t._id } }));
+        if (!teams || teams.length === 0) return [];
+        const promises = teams.map((t: Team) => taskApi.get('', { params: { teamId: t._id } }));
         const results = await Promise.all(promises);
         return results.flatMap(r => r.data);
     },
@@ -43,18 +45,18 @@ export default function Dashboard() {
   const tasks = useMemo(() => {
     if (!allTasks) return [];
     if (selectedTeamId === 'ALL') return allTasks;
-    return allTasks.filter((t: any) => t.teamId === selectedTeamId);
+    return allTasks.filter((t: Task) => t.teamId === selectedTeamId);
   }, [allTasks, selectedTeamId]);
 
   // 3. Fetch Users for creator names
-  const { data: users } = useQuery({
+  const { data: users } = useQuery<User[]>({
     queryKey: ['users'],
     queryFn: async () => (await userApi.get('')).data,
     enabled: !!tasks
   });
 
   const getCreatorName = (id: number) => {
-    return users?.find((u: any) => u.id === id)?.fullName || `User ${id}`;
+    return users?.find((u: User) => u.id === id)?.fullName || `User ${id}`;
   };
 
   const getStatusInfo = (status: string, isOverdue: boolean, isDueToday: boolean) => {
@@ -68,7 +70,7 @@ export default function Dashboard() {
     }
   };
 
-  const handleNotificationClick = (notif: any) => {
+  const handleNotificationClick = (notif: Notification) => {
     markAsRead(notif._id);
     setIsNotificationsOpen(false);
     
@@ -236,7 +238,7 @@ export default function Dashboard() {
                                     Overview Board
                                 </button>
                                 <div className="h-px bg-base-200 dark:bg-slate-800 my-1 mx-2" />
-                                {teams?.map((t: any) => (
+                                {teams?.map((t: Team) => (
                                     <button 
                                         key={t._id}
                                         onClick={() => { setSelectedTeamId(t._id); setIsSwitcherOpen(false); }} 
@@ -292,7 +294,7 @@ export default function Dashboard() {
                                 )}
                             </div>
                         )}
-                        {tasks?.map((task: any) => {
+                        {tasks?.map((task: Task) => {
                             const isDone = task.status === 'DONE';
                             const today = new Date();
                             today.setHours(0, 0, 0, 0);
@@ -301,7 +303,7 @@ export default function Dashboard() {
                             const isDueToday = !isDone && deadline && deadline.getTime() === today.getTime();
 
                             const { icon: StatusIcon, color, bg, label } = getStatusInfo(task.status, !!isOverdue, !!isDueToday);
-                            const taskTeam = teams?.find((t: any) => t._id === task.teamId);
+                            const taskTeam = teams?.find((t: Team) => t._id === task.teamId);
 
                             return (
                                 <div 

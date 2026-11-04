@@ -1,14 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userApi } from '../api/axios';
 import toast from 'react-hot-toast';
-
-type User = {
-  id: number;
-  email: string;
-  fullName: string;
-  role: 'MEMBER' | 'TEAM_LEADER' | 'ADMIN';
-  isActive: boolean;
-};
+import axios from 'axios';
+import type { User, UserRole } from '../types';
 
 export default function AdminPanel() {
   const qc = useQueryClient();
@@ -27,7 +21,7 @@ export default function AdminPanel() {
   });
 
   const changeRole = useMutation({
-    mutationFn: ({ id, role }: { id: number; role: string }) =>
+    mutationFn: ({ id, role }: { id: number; role: UserRole }) =>
       userApi.patch(`/admin/${id}/role`, { role }),
     onSuccess: () => {
       toast.success('Role updated');
@@ -41,8 +35,12 @@ export default function AdminPanel() {
       toast.success('User deleted');
       qc.invalidateQueries({ queryKey: ['admin-users'] });
     },
-    onError: (e: any) => {
-      toast.error(e.response?.data?.error || 'Delete failed');
+    onError: (e: unknown) => {
+      if (axios.isAxiosError(e) && e.response?.data?.error) {
+        toast.error(e.response.data.error);
+      } else {
+        toast.error('Delete failed');
+      }
     },
   });
 
@@ -81,10 +79,11 @@ export default function AdminPanel() {
 
                 <td className="p-4">
                   <select
+                    aria-label={`Role for ${u.fullName}`}
                     className="select select-sm select-bordered p-1"
                     value={u.role}
                     onChange={(e) =>
-                      changeRole.mutate({ id: u.id, role: e.target.value })
+                      changeRole.mutate({ id: u.id, role: e.target.value as UserRole })
                     }
                   >
                     <option value="MEMBER">Member</option>
@@ -104,13 +103,9 @@ export default function AdminPanel() {
                   )}
 
                   <button
-                    className="btn btn-sm btn-outline btn-error"
+                    className="btn btn-sm btn-error"
                     onClick={() => {
-                      if (
-                        confirm(
-                          `Delete ${u.fullName}? This cannot be undone.`
-                        )
-                      ) {
+                      if (confirm(`Are you sure you want to delete ${u.fullName}?`)) {
                         deleteUser.mutate(u.id);
                       }
                     }}

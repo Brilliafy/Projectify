@@ -5,14 +5,15 @@ import { useState, useMemo } from 'react';
 import CreateTeamModal from '../components/CreateTeamModal';
 import TeamDetailsModal from '../components/TeamDetailsModal';
 import TeamDetailsModalReadOnly from '../components/TeamDetailsModalReadOnly';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
+import type { Team, User } from '../types';
 
 export default function TeamsPage() {
   const { user } = useAuth();
   const [createOpen, setCreateOpen] = useState(false);
   const [activeTeam, setActiveTeam] = useState<string | null>(null);
 
-  const { data: teams, isLoading } = useQuery({
+  const { data: teams, isLoading } = useQuery<Team[]>({
     queryKey: ['teams', user?.role],
     queryFn: async () => {
         if (user?.role === 'ADMIN') {
@@ -22,14 +23,14 @@ export default function TeamsPage() {
     },
   });
 
-  const { data: users } = useQuery({
+  const { data: users } = useQuery<User[]>({
     queryKey: ['users'],
     queryFn: async () => (await userApi.get('')).data,
   });
 
   const userMap = useMemo(() => {
-    const map = new Map<number, any>();
-    users?.forEach((u: any) => map.set(u.id, u));
+    const map = new Map<number, User>();
+    users?.forEach((u: User) => map.set(u.id, u));
     return map;
   }, [users]);
 
@@ -80,7 +81,7 @@ export default function TeamsPage() {
                 <p className="text-sm opacity-30 mt-1">Start by creating a new collaboration space.</p>
             </div>
           ) : (
-            teams?.map((team: any) => {
+            teams?.map((team: Team) => {
               const isOwner = team.leaderId === user?.id;
               const leader = userMap.get(team.leaderId);
 

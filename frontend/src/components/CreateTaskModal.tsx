@@ -1,11 +1,13 @@
-import { X, Loader2, Users, Search, Calendar, Target, Flag, Layers, Plus, FileText, Image as ImageIcon, FileCode, Trash2 } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { X, Loader2, Users, Search, Target, Plus, FileText, Image as ImageIcon, FileCode, Trash2 } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { taskApi, teamApi, userApi } from '../api/axios';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
+import axios from 'axios';
 import RichTextEditor from './RichTextEditor';
+import type { Team, User, TaskPriority } from '../types';
 
 interface CreateTaskModalProps {
   isOpen: boolean;
@@ -13,10 +15,18 @@ interface CreateTaskModalProps {
   teamId: string;
 }
 
+interface CreateTaskFormValues {
+  title: string;
+  description: string;
+  priority: TaskPriority;
+  deadline?: string;
+  assignees: string[] | string;
+}
+
 export default function CreateTaskModal({ isOpen, onClose, teamId }: CreateTaskModalProps) {
   const qc = useQueryClient();
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm();
-  const priority = watch('priority', 'MEDIUM');
+  const { register, handleSubmit, reset, setValue, control, formState: { errors } } = useForm<CreateTaskFormValues>();
+  const priority = useWatch({ control, name: 'priority', defaultValue: 'MEDIUM' });
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState<string>(teamId === 'ALL' ? '' : teamId);
@@ -25,8 +35,9 @@ export default function CreateTaskModal({ isOpen, onClose, teamId }: CreateTaskM
   const removeFile = (index: number) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
+
   // Fetch Teams for Dropdown (Teams I OWN)
-  const { data: myTeams } = useQuery({
+  const { data: myTeams } = useQuery<Team[]>({
     queryKey: ['teams', 'owned'],
     queryFn: async () => (await teamApi.get('/owned')).data,
     enabled: isOpen
@@ -35,53 +46,55 @@ export default function CreateTaskModal({ isOpen, onClose, teamId }: CreateTaskM
   // Validate that the initially selected team is actually owned. If not, reset it.
   useEffect(() => {
     if (myTeams && selectedTeamId && selectedTeamId !== 'ALL') {
-       const isOwned = myTeams.some((t: any) => t._id === selectedTeamId);
-       if (!isOwned) {
+      const isOwned = myTeams.some((t: Team) => t._id === selectedTeamId);
+      if (!isOwned) {
+        queueMicrotask(() => {
           setSelectedTeamId('');
           setValue('assignees', []);
-       }
+        });
+      }
     }
   }, [myTeams, selectedTeamId, setValue]);
   
   // Fetch Team Members for SELECTED Team
-  const { data: teamDetails } = useQuery({
+  const { data: teamDetails } = useQuery<Team>({
     queryKey: ['team', selectedTeamId],
     queryFn: async () => (await teamApi.get(`/${selectedTeamId}`)).data,
     enabled: !!selectedTeamId && selectedTeamId !== 'ALL',
   });
 
-  const { data: users } = useQuery({
+  const { data: users } = useQuery<User[]>({
     queryKey: ['users'],
     queryFn: async () => (await userApi.get('')).data,
     enabled: isOpen,
   });
 
   // Filter users to only team members
-  const teamMembers = users?.filter((u: any) => teamDetails?.members?.includes(u.id)) || [];
+  const teamMembers = users?.filter((u: User) => teamDetails?.members?.includes(u.id)) || [];
   
   // Filter by search
-  const filteredMembers = teamMembers.filter((m: any) => 
+  const filteredMembers = teamMembers.filter((m: User) => 
     m.fullName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleSelectAll = (e: any) => {
+  const handleSelectAll = (e: React.MouseEvent) => {
     e.preventDefault();
-    const ids = filteredMembers.map((m: any) => m.id.toString());
+    const ids = filteredMembers.map((m: User) => m.id.toString());
     setValue('assignees', ids);
   };
 
-  const handleDeselectAll = (e: any) => {
+  const handleDeselectAll = (e: React.MouseEvent) => {
     e.preventDefault();
     setValue('assignees', []);
   };
 
   const createMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: CreateTaskFormValues) => {
       const formData = new FormData();
       formData.append('title', data.title);
       formData.append('description', data.description || '');
       formData.append('priority', data.priority);
-      formData.append('teamId', selectedTeamId); // Use selected state
+      formData.append('teamId', selectedTeamId);
       if (data.deadline) formData.append('deadline', data.deadline);
       
       const assignedIds = data.assignees 
@@ -108,8 +121,12 @@ export default function CreateTaskModal({ isOpen, onClose, teamId }: CreateTaskM
       setSelectedFiles([]);
       onClose();
     },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.error || 'Failed to create task');
+    onError: (err: unknown) => {
+      if (axios.isAxiosError(err) && err.response?.data?.error) {
+        toast.error(err.response.data.error);
+      } else {
+        toast.error('Failed to create task');
+      }
     }
   });
 
@@ -133,7 +150,6 @@ export default function CreateTaskModal({ isOpen, onClose, teamId }: CreateTaskM
 
         <form onSubmit={handleSubmit((d) => createMutation.mutate(d))} className="p-8 space-y-8 overflow-y-auto no-scrollbar">
           
-          
           <div className="form-control">
              <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2 block">Assigned Team</label>
              <select 
@@ -141,272 +157,210 @@ export default function CreateTaskModal({ isOpen, onClose, teamId }: CreateTaskM
                value={selectedTeamId}
                onChange={(e) => {
                   setSelectedTeamId(e.target.value);
-                  setValue('assignees', []); // Reset assignees on team change
+                  setValue('assignees', []);
                }}
                required
              >
                <option value="" disabled>Select a team...</option>
-               {myTeams?.map((t: any) => (
+               {myTeams?.map((t: Team) => (
                  <option key={t._id} value={t._id}>{t.name}</option>
                ))}
              </select>
           </div>
 
-          
           <div className="form-control group">
             <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2 block animate-in slide-in-from-left-2">Task Title</label>
             <input 
               {...register('title', { required: 'Title is required' })} 
               className={clsx(
-                "w-full bg-slate-50 dark:bg-slate-950 border-2 border-transparent focus:border-primary/30 rounded-2xl p-4 font-black font-['Outfit'] text-xl tracking-tight transition-all outline-none",
-                errors.title ? "border-rose-500/50" : "hover:bg-slate-100 dark:hover:bg-slate-900"
+                "w-full bg-slate-50 dark:bg-slate-950 border rounded-2xl p-4 font-bold text-sm outline-none focus:border-primary transition-all",
+                errors.title ? "border-error" : "border-base-200 dark:border-slate-800"
               )}
-              placeholder="E.G. CORE PROTOCOL OPTIMIZATION..."
+              placeholder="e.g. Implement OAuth Flow"
             />
-            {errors.title && <span className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 block">{errors.title.message as string}</span>}
+            {errors.title && <span className="text-error text-xs mt-1 ml-1">{errors.title.message}</span>}
           </div>
 
-          
-          <div className="form-control">
-            <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2 block">Task Documentation</label>
-            <RichTextEditor 
-              content="" 
-              onChange={(html) => setValue('description', html)} 
-              minHeight="150px"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            <div className="form-control">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2 flex items-center gap-2"><Flag size={12} /> Strategic Priority</label>
-              <div className="flex gap-2 bg-slate-50 dark:bg-slate-950 p-2 rounded-2xl border border-base-200 dark:border-slate-800">
-                {['LOW', 'MEDIUM', 'HIGH'].map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setValue('priority', p)}
-                    className={clsx(
-                      "flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-                      priority === p
-                        ? "bg-white dark:bg-slate-800 shadow-xl text-primary scale-[1.02]"
-                        : "opacity-40 hover:opacity-100"
-                    )}
-                  >
-                    {p}
-                  </button>
-                ))}
-                <input type="hidden" {...register('priority')} defaultValue="MEDIUM" />
-              </div>
-            </div>
-
-            
-            <div className="form-control">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2 flex items-center gap-2"><Calendar size={12} /> Execution Deadline</label>
-              <input 
-                type="date" 
-                {...register('deadline', { 
-                  required: 'Deadline is required',
-                  validate: (value) => {
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    const selectedDate = new Date(value);
-                    return selectedDate >= today || 'Deadline cannot be in the past';
-                  }
-                })} 
-                className={clsx(
-                    "w-full bg-slate-50 dark:bg-slate-950 border border-base-200 dark:border-slate-800 rounded-2xl p-4 font-bold text-sm outline-none transition-all hover:border-primary/30 focus:border-primary",
-                    errors.deadline && "border-rose-500/50"
-                )}
-              />
-              {errors.deadline && <span className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 block">{errors.deadline.message as string}</span>}
-            </div>
-          </div>
-
-          
-          <div className="form-control">
-            <div className="flex items-center justify-between mb-4">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 flex items-center gap-2"><Users size={12} /> Team Members</label>
-                <div className="flex gap-2">
-                    <button onClick={handleSelectAll} className="px-3 py-1 bg-slate-50 dark:bg-slate-950 border border-base-200 dark:border-slate-800 rounded-lg text-[8px] font-black uppercase tracking-widest opacity-40 hover:opacity-100 transition-all">Select All</button>
-                    <button onClick={handleDeselectAll} className="px-3 py-1 bg-slate-50 dark:bg-slate-950 border border-base-200 dark:border-slate-800 rounded-lg text-[8px] font-black uppercase tracking-widest opacity-40 hover:opacity-100 transition-all">Deselect</button>
-                </div>
-            </div>
-            
-
-            <div className={clsx(
-                "bg-slate-50 dark:bg-slate-950 border border-base-200 dark:border-slate-800 rounded-[2rem] p-4 transition-all",
-                !selectedTeamId && "opacity-50 pointer-events-none grayscale"
-            )}>
-               
-               <div className="relative mb-4">
-                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20 w-4 h-4" />
-                 <input 
-                   type="text" 
-                   className="w-full bg-white dark:bg-slate-900 border border-base-200 dark:border-slate-800 rounded-xl pl-10 pr-4 py-3 text-sm font-medium outline-none focus:border-primary transition-all" 
-                   placeholder="SEARCH TEAM MEMBERS..."
-                   value={searchTerm}
-                   onChange={(e) => setSearchTerm(e.target.value)}
-                   disabled={!selectedTeamId}
-                 />
-               </div>
-
-               
-               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto no-scrollbar pr-1">
-                {!selectedTeamId ? (
-                   <div className="col-span-full py-10 flex flex-col items-center justify-center opacity-40 bg-white/50 dark:bg-slate-900/50 rounded-2xl">
-                     <Target size={32} />
-                     <span className="text-[10px] font-black uppercase tracking-[0.2em] mt-2">Select a Team First</span>
-                   </div>
-                ) : filteredMembers.length === 0 ? (
-                  <div className="col-span-full py-10 flex flex-col items-center justify-center opacity-20 bg-white/50 dark:bg-slate-900/50 rounded-2xl">
-                    <Users size={32} />
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] mt-2">No Team Members Available</span>
-                  </div>
-                ) : (
-                  filteredMembers.map((m: any) => (
-                    <label 
-                        key={m.id} 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <div className="form-control">
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2 block">Priority Level</label>
+                <div className="grid grid-cols-3 gap-2 p-1.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-base-200 dark:border-slate-800">
+                   {(['LOW', 'MEDIUM', 'HIGH'] as const).map(p => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setValue('priority', p)}
                         className={clsx(
-                            "cursor-pointer flex items-center justify-between p-3 rounded-2xl transition-all border",
-                            searchTerm && m.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ? "opacity-100" : "opacity-100",
-                            "bg-white dark:bg-slate-900 border-base-200 dark:border-slate-800 hover:border-primary/50 group/item"
+                           "py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all",
+                           priority === p ? "bg-white dark:bg-slate-800 text-primary shadow-md shadow-black/5" : "opacity-40 hover:opacity-100"
                         )}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="avatar placeholder">
-                          <div className="bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-full w-8 h-8 flex items-center justify-center text-center font-black text-[10px]">
-                             {m.fullName[0].toUpperCase()}
-                          </div>
-                        </div>
-                        <div className="min-w-0">
-                           <div className="font-bold text-xs truncate">{m.fullName}</div>
-                           <div className="text-[8px] opacity-40 uppercase font-black tracking-widest">{m.role}</div>
-                        </div>
-                      </div>
-                      <input 
-                        type="checkbox" 
-                        value={m.id} 
-                        {...register('assignees')} 
-                        className="checkbox checkbox-sm checkbox-primary rounded-lg border-2" 
-                      />
-                    </label>
-                  ))
-                )}
-               </div>
-            </div>
+                      >
+                         {p}
+                      </button>
+                   ))}
+                </div>
+             </div>
+
+             <div className="form-control">
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2 block">Deadline Date</label>
+                <div className="relative">
+                   <input 
+                      type="date" 
+                      {...register('deadline')}
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-base-200 dark:border-slate-800 rounded-2xl p-3.5 font-bold text-xs outline-none focus:border-primary transition-all text-base-content"
+                   />
+                </div>
+             </div>
           </div>
 
-          
           <div className="form-control">
-            <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2 flex items-center gap-2"><Layers size={12} /> Data Attachments</label>
-            
-            <div className="space-y-4">
-              <div 
-                className="bg-slate-50 dark:bg-slate-950 border border-dashed border-base-200 dark:border-slate-800 rounded-3xl p-8 transition-all hover:bg-slate-100 dark:hover:bg-slate-900 group/upload cursor-pointer relative"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                  <input 
-                    type="file" 
-                    multiple 
-                    ref={fileInputRef}
-                    onChange={(e) => {
-                      if (e.target.files) {
-                        const newFiles = Array.from(e.target.files);
-                        const ALLOWED_EXTENSIONS = ['webp', 'jpg', 'jpeg', 'zip', 'rar', '7z', 'pdf', 'txt'];
-                        const MAX_SIZE = 2 * 1024 * 1024; // 2MB
-
-                        if (selectedFiles.length + newFiles.length > 5) {
-                           toast.error('Max 5 files allowed in total');
-                           return;
-                        }
-
-                        const validFiles = newFiles.filter(file => {
-                            const ext = file.name.split('.').pop()?.toLowerCase() || '';
-                            if (!ALLOWED_EXTENSIONS.includes(ext)) {
-                                toast.error(`Invalid file type: ${file.name}`);
-                                return false;
-                            }
-                            if (file.size > MAX_SIZE) {
-                                toast.error(`File too large (>2MB): ${file.name}`);
-                                return false;
-                            }
-                            return true;
-                        });
-
-                        setSelectedFiles(prev => [...prev, ...validFiles]);
-                      }
-                    }}
-                    className="hidden" 
-                    accept=".webp,.jpg,.jpeg,.zip,.rar,.7z,.pdf,.txt"
-                  />
-                  <div className="flex flex-col items-center justify-center text-center gap-2">
-                      <div className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center group-hover/upload:scale-110 transition-transform">
-                          <Layers className="opacity-40" size={24} />
-                      </div>
-                      <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Drop fragments or click to upload</p>
-                      <p className="text-[8px] font-bold opacity-20 uppercase tracking-[0.2em]">MAX 5 FILES • 2MB LIMIT • IMG/ZIP/PDF/TXT</p>
-                  </div>
-              </div>
-
-              {selectedFiles.length > 0 && (
-                <div className="grid grid-cols-1 gap-3 animate-in fade-in slide-in-from-top-4 duration-500">
-                  {selectedFiles.map((file, i) => {
-                    const isImage = file.type.startsWith('image/');
-                    const isPdf = file.type === 'application/pdf';
-                    
-                    return (
-                      <div key={i} className="group/card flex items-center gap-4 bg-white dark:bg-slate-900 border border-base-200 dark:border-slate-800 p-4 rounded-2xl hover:shadow-xl hover:border-primary/30 transition-all duration-300">
-                        <div className={clsx(
-                          "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-inner",
-                          isImage ? "bg-emerald-500/10 text-emerald-500" : 
-                          isPdf ? "bg-rose-500/10 text-rose-500" : 
-                          "bg-blue-500/10 text-blue-500"
-                        )}>
-                          {isImage ? <ImageIcon size={20} /> : 
-                           isPdf ? <FileText size={20} /> : 
-                           <FileCode size={20} />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-black truncate uppercase tracking-tight">{file.name}</p>
-                          <p className="text-[10px] font-bold opacity-30 mt-0.5">{(file.size / 1024).toFixed(1)} KB • {file.type.split('/')[1]?.toUpperCase() || 'BINARY'}</p>
-                        </div>
-                        <button 
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); removeFile(i); }}
-                          className="w-8 h-8 !p-0 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500 opacity-0 group-hover/card:opacity-100 hover:bg-rose-500/10 hover:text-rose-500 transition-all duration-200"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+             <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2 block">Detailed Description</label>
+             <RichTextEditor 
+                content="" 
+                onChange={(html) => setValue('description', html)}
+                minHeight="120px"
+             />
           </div>
 
-          <div className="pt-8 flex justify-end gap-5 border-t border-base-200 dark:border-slate-800 shrink-0">
-            <button type="button" onClick={onClose} className="px-6 py-3 rounded-2xl text-red-400 hover:text-red-500 uppercase tracking-widest text-[10px] opacity-80 hover:opacity-100 transition-all hover:bg-slate-100 dark:hover:bg-slate-800">Abort</button>
+          <div className="form-control">
+            <div className="flex items-center justify-between mb-2">
+               <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Files & Attachments</label>
+               <span className="text-[10px] font-bold opacity-30">Max 5 files (2MB each)</span>
+            </div>
             
-            <button 
-              type="submit" 
-              className="btn-premium-glow group/btn"
-              disabled={createMutation.isPending}
+            <input 
+              type="file" 
+              multiple 
+              ref={fileInputRef} 
+              className="hidden" 
+              onChange={(e) => {
+                if (e.target.files) {
+                  const newFiles = Array.from(e.target.files);
+                  if (selectedFiles.length + newFiles.length > 5) {
+                    toast.error('Maximum 5 files allowed');
+                    return;
+                  }
+                  const invalidSize = newFiles.some(f => f.size > 2 * 1024 * 1024);
+                  if (invalidSize) {
+                    toast.error('File size exceeds 2MB limit');
+                    return;
+                  }
+                  setSelectedFiles(prev => [...prev, ...newFiles]);
+                }
+              }} 
+            />
+
+            <div 
+              onClick={() => fileInputRef.current?.click()}
+              className="border-2 border-dashed border-base-200 dark:border-slate-800 hover:border-primary/50 rounded-2xl p-6 text-center cursor-pointer transition-all hover:bg-slate-50/50 dark:hover:bg-slate-950/50 group"
             >
-              <div className="btn-premium-inner">
-                <div className="flex items-center gap-3">
-                  {createMutation.isPending ? (
-                    <Loader2 className="animate-spin w-4 h-4 text-primary" />
-                  ) : (
-                    <Plus size={18} className="text-primary group-hover/btn:animate-pulse" />
-                  )}
-                  <span className="animate-text-glow uppercase tracking-[0.2em] text-[10px] font-black">
-                    Finalize Implementation
-                  </span>
-                </div>
+               <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-950 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                  <Plus size={20} className="opacity-40 group-hover:opacity-100 transition-opacity" />
+               </div>
+               <span className="text-xs font-bold block mb-1">Click to browse or drag and drop</span>
+               <span className="text-[10px] opacity-40">Supports .webp, .jpg, .zip, .pdf, .txt</span>
+            </div>
+
+            {selectedFiles.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
+                 {selectedFiles.map((file, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-base-200 dark:border-slate-800">
+                       <div className="flex items-center gap-3 overflow-hidden">
+                          <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                             {file.type.includes('image') ? <ImageIcon size={16} /> : file.type.includes('pdf') ? <FileText size={16} /> : <FileCode size={16} />}
+                          </div>
+                          <div className="truncate">
+                             <div className="text-xs font-bold truncate">{file.name}</div>
+                             <div className="text-[9px] opacity-40 font-mono">{(file.size / 1024).toFixed(1)} KB</div>
+                          </div>
+                       </div>
+                       <button 
+                         type="button" 
+                         onClick={() => removeFile(idx)}
+                         className="btn btn-ghost btn-circle btn-xs text-error opacity-40 hover:opacity-100"
+                       >
+                          <Trash2 size={14} />
+                       </button>
+                    </div>
+                 ))}
               </div>
-            </button>
+            )}
+          </div>
+
+          <div className="form-control">
+             <div className="flex items-center justify-between mb-3">
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Assignees</label>
+                <div className="flex gap-2">
+                   <button type="button" onClick={handleSelectAll} className="text-[10px] font-black uppercase tracking-wider text-primary hover:underline">Select All</button>
+                   <span className="text-[10px] opacity-30">•</span>
+                   <button type="button" onClick={handleDeselectAll} className="text-[10px] font-black uppercase tracking-wider opacity-40 hover:opacity-100">Clear</button>
+                </div>
+             </div>
+
+             <div className="relative mb-3">
+                <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-30" />
+                <input 
+                  type="text" 
+                  placeholder="Search assignees..." 
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-base-200 dark:border-slate-800 rounded-xl py-2 pl-10 pr-4 text-xs font-bold outline-none focus:border-primary transition-all"
+                />
+             </div>
+
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto no-scrollbar pr-1">
+              {!selectedTeamId ? (
+                 <div className="col-span-full py-10 flex flex-col items-center justify-center opacity-40 bg-white/50 dark:bg-slate-900/50 rounded-2xl">
+                   <Target size={32} />
+                   <span className="text-[10px] font-black uppercase tracking-[0.2em] mt-2">Select a Team First</span>
+                 </div>
+              ) : filteredMembers.length === 0 ? (
+                <div className="col-span-full py-10 flex flex-col items-center justify-center opacity-20 bg-white/50 dark:bg-slate-900/50 rounded-2xl">
+                  <Users size={32} />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] mt-2">No Team Members Available</span>
+                </div>
+              ) : (
+                filteredMembers.map((m: User) => (
+                  <label 
+                      key={m.id} 
+                      className={clsx(
+                          "cursor-pointer flex items-center justify-between p-3 rounded-2xl transition-all border",
+                          searchTerm && m.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ? "opacity-100" : "opacity-100",
+                          "bg-white dark:bg-slate-900 border-base-200 dark:border-slate-800 hover:border-primary/50 group/item"
+                      )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="avatar placeholder">
+                        <div className="bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-full w-8 h-8 flex items-center justify-center text-center font-black text-[10px]">
+                           {m.fullName[0].toUpperCase()}
+                        </div>
+                      </div>
+                      <div className="min-w-0">
+                         <div className="font-bold text-xs truncate">{m.fullName}</div>
+                         <div className="text-[8px] opacity-40 uppercase font-black tracking-widest">{m.role}</div>
+                      </div>
+                    </div>
+                    <input 
+                      type="checkbox" 
+                      value={m.id.toString()}
+                      {...register('assignees')}
+                      className="checkbox checkbox-primary checkbox-sm rounded-lg"
+                    />
+                  </label>
+                ))
+              )}
+             </div>
+          </div>
+
+          <div className="pt-4 flex items-center justify-end gap-3 border-t border-base-200 dark:border-slate-800">
+             <button type="button" onClick={onClose} className="btn btn-ghost rounded-2xl px-6 font-bold text-xs uppercase tracking-widest opacity-60">Cancel</button>
+             <button 
+               type="submit" 
+               disabled={createMutation.isPending || !selectedTeamId}
+               className="btn btn-primary rounded-2xl px-8 font-black text-xs uppercase tracking-widest shadow-xl shadow-primary/20 gap-2 min-w-[140px]"
+             >
+                {createMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : 'Create Task'}
+             </button>
           </div>
         </form>
       </div>

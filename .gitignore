@@ -1,2 +1,50 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Environment and Credentials (CRITICAL)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+*service-account*.json
+projectify-*.json
+
+# Production / Build outputs
+dist/
+dist-ssr/
+build/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Database & Uploads
+*.sqlite
+*.db
+uploads/
+
+# IDE / Editor files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Testing / Coverage
+coverage/
+.nyc_output/
+
+# Project specific
 testData/
-scripts/
+scripts/

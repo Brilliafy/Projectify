@@ -1,45 +1,56 @@
 services:
   postgres:
-    image: postgres:alpine
+    image: postgres:16-alpine
     container_name: pms_postgres
     restart: always
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password123
-      POSTGRES_DB: userdb
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password123}
+      POSTGRES_DB: ${POSTGRES_DB:-userdb}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d userdb"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-admin} -d ${POSTGRES_DB:-userdb}"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   mongo:
-    image: mongo:latest
+    image: mongo:7-jammy
     container_name: pms_mongo
     restart: always
     volumes:
       - mongodata:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
-    image: redis:alpine
+    image: redis:7-alpine
     container_name: pms_redis
     restart: always
     command: ["redis-server", "--save", "60", "1", "--appendonly", "yes"]
     volumes:
       - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   user-service:
-    build: 
+    build:
       context: ./user-service
       dockerfile: Dockerfile
     container_name: pms_user_service
     restart: always
     environment:
-      - DATABASE_URL=postgresql://admin:password123@postgres:5432/userdb
-      - JWT_SECRET=dev_secret
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-userdb}
+      - JWT_SECRET=${JWT_SECRET:-dev_secret}
       - PORT=3001
+      - NODE_ENV=production
     depends_on:
       postgres:
         condition: service_healthy
@@ -54,11 +65,14 @@ services:
       - MONGO_URI=mongodb://mongo:27017/teamdb
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - JWT_SECRET=dev_secret
+      - JWT_SECRET=${JWT_SECRET:-dev_secret}
       - PORT=3002
+      - NODE_ENV=production
     depends_on:
-      - mongo
-      - redis
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   task-service:
     build:
@@ -70,11 +84,17 @@ services:
       - MONGO_URI=mongodb://mongo:27017/taskdb
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - JWT_SECRET=dev_secret
+      - JWT_SECRET=${JWT_SECRET:-dev_secret}
       - PORT=3003
+      - STORAGE_DRIVER=${STORAGE_DRIVER:-local}
+      - GCS_BUCKET_NAME=${GCS_BUCKET_NAME:-projectify-attachments-storage}
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID:-projectify-483418}
+      - NODE_ENV=production
     depends_on:
-      - mongo
-      - redis
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   notification-service:
     build:
@@ -86,11 +106,14 @@ services:
       - MONGO_URI=mongodb://mongo:27017/notificationdb
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - JWT_SECRET=dev_secret
+      - JWT_SECRET=${JWT_SECRET:-dev_secret}
       - PORT=3004
+      - NODE_ENV=production
     depends_on:
-      - mongo
-      - redis
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   frontend:
     build:
