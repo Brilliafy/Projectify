@@ -10,6 +10,9 @@
   </p>
 
   <p align="center">
+    <a href="https://projectify-demo.netlify.app" target="_blank">
+      <img src="https://img.shields.io/badge/Live_Demo-projectify--demo.netlify.app-00C7B7?style=for-the-badge&logo=netlify&logoColor=white" alt="Live Demo" />
+    </a>
     <a href="https://github.com/Brilliafy/Projectify/actions/workflows/ci.yml">
       <img src="https://img.shields.io/badge/CI-Passing-brightgreen?style=for-the-badge&logo=githubactions&logoColor=white" alt="CI Status" />
     </a>
@@ -34,6 +37,13 @@
   </p>
 
   <p align="center">
+    <a href="https://projectify-demo.netlify.app" target="_blank">
+      <strong>✨ Try the Live Interactive Demo (Zero Setup Required) &rarr;</strong>
+    </a>
+  </p>
+
+  <p align="center">
+    <a href="#-live-interactive-demo">Live Demo</a> •
     <a href="#-system-architecture">Architecture</a> •
     <a href="#-microservices-breakdown">Services</a> •
     <a href="#-quickstart--local-setup">Quickstart</a> •
@@ -43,6 +53,19 @@
   </p>
 
 </div>
+
+---
+
+## 🎮 Live Interactive Demo
+
+Experience the full Projectify workspace directly in your browser without spinning up local databases or containers:
+
+[![Open Live Demo](https://img.shields.io/badge/Launch_Demo-projectify--demo.netlify.app-00C7B7?style=for-the-badge&logo=netlify&logoColor=white)](https://projectify-demo.netlify.app)
+
+> **💡 Highlights of the Showcase Demo:**
+> - **100% Offline & Client-Side**: Powered by an in-memory & `localStorage` mock adapter replicating Fastify REST endpoints and Socket.IO real-time notification streams.
+> - **1-Click Instant Login**: Log in immediately as **Admin (Elena Rostova)**, **Team Lead (Marcus Vance)**, or **Developer (Sarah Chen)** directly from the login page.
+> - **Rich Pre-loaded Data**: 3 engineering teams, interactive Kanban board with TipTap rich-text descriptions, multi-tag task filtering, and simulated team notifications.
 
 ---
 
@@ -306,4 +329,4 @@ Projectify includes production configuration for **Google Compute Engine (GCE)**
 
 ## 📄 License
 
-This project is licensed under the **GNU AGPLv3 License** — see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **GNU AGPLv3 License** - see the [LICENSE](LICENSE) file for details.

@@ -198,7 +198,7 @@ export const INITIAL_TASKS: Task[] = [
   {
     _id: 'task-108',
     title: 'Rotate Staging Database Credentials & Vault Tokens',
-    description: '<p>Quarterly security audit rotation of HashiCorp Vault lease tokens and PostgreSQL staging service credentials. <strong>Overdue by 1 day</strong> &mdash; requires coordinated restart of background workers.</p>',
+    description: '<p>Quarterly security audit rotation of HashiCorp Vault lease tokens and PostgreSQL staging service credentials. <strong>Overdue by 1 day</strong> - requires coordinated restart of background workers.</p>',
     status: 'TODO',
     priority: 'MEDIUM',
     deadline: new Date(Date.now() - 1 * 86400000).toISOString(), // 1 day overdue
